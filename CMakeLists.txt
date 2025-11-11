@@ -3,4 +3,6 @@ project(dummy)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(dummy src/main.cpp)
+add_executable(dummy src/main.cpp
+        src/game/cards.cpp
+        src/game/cards.h)
