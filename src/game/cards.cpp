@@ -55,14 +55,28 @@ namespace game {
         return str;
     }
 
-    Pile* getFullDeck() {
-        const auto p = new Pile();
+    unsigned short Card::getValue() const {
+        switch (value) {
+            case 1:
+                return 15;
+            case 11:
+            case 12:
+            case 13:
+                return 10;
+            default:
+                return value;
+        }
+    }
+
+
+    Pile getFullDeck() {
+        Pile p{};
 
         for (unsigned char i = 1; i <= 13; i++) {
-            p->addCard(std::make_shared<Card>(Card{SPADES, i}));
-            p->addCard(std::make_shared<Card>(Card{HEARTS, i}));
-            p->addCard(std::make_shared<Card>(Card{CLUBS, i}));
-            p->addCard(std::make_shared<Card>(Card{DIAMONDS, i}));
+            p.addCard(std::make_shared<Card>(Card{SPADES, i}));
+            p.addCard(std::make_shared<Card>(Card{HEARTS, i}));
+            p.addCard(std::make_shared<Card>(Card{CLUBS, i}));
+            p.addCard(std::make_shared<Card>(Card{DIAMONDS, i}));
         }
 
         return p;
@@ -77,6 +91,27 @@ namespace game {
     void Pile::addCard(const std::shared_ptr<Card>& card) {
         cards.push_back(card);
     }
+
+    bool Pile::dump(Pile &other, const unsigned char numCards) {
+        if (numCards > cards.size())
+            return false;
+
+        for (int i = 0; i < numCards; i++) {
+            other.cards.push_back(cards.back());
+            cards.pop_back();
+        }
+
+        return true;
+    }
+
+    Pile Pile::combine(const Pile &pile) const {
+        auto p = Pile{};
+        p.cards.insert(p.cards.begin(), cards.begin(), cards.end());
+        p.cards.insert(p.cards.end(), pile.cards.begin(), pile.cards.end());
+
+        return p;
+    }
+
 
     void Pile::sort() {
         std::sort(cards.begin(), cards.end(), compareCards);
@@ -94,10 +129,14 @@ namespace game {
     }
 
     std::string Pile::toString() const {
-        std::string str;
-        for (const auto& c : cards)
-            str += c->toString() + " ";
+        return std::accumulate(cards.begin(), cards.end(), std::string{}, [](const auto& str, const auto& card) {
+            return str + " " + card->toString();
+        });
+    }
 
-        return str;
+    unsigned short Pile::getValue() const {
+        return std::accumulate(cards.begin(), cards.end(), 0u, [](unsigned short sum, const auto& card) {
+            return sum + card->getValue();
+        });
     }
 }

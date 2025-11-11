@@ -16,6 +16,7 @@ namespace game {
         const Suit suit;
         const unsigned char value;
 
+        [[nodiscard]] unsigned short getValue() const;
         [[nodiscard]] std::string toString() const;
     };
 
@@ -26,15 +27,16 @@ namespace game {
         void sort();
         void shuffle();
         void addCard(const std::shared_ptr<Card>& card);
-        void dump();
+        bool dump(Pile& other, unsigned char numCards);
         [[nodiscard]] unsigned char size() const;
         [[nodiscard]] Pile combine(const Pile& pile) const;
         [[nodiscard]] std::string toString() const;
+        [[nodiscard]] unsigned short getValue() const;
     private:
         std::vector<std::shared_ptr<Card>> cards;
     };
 
-    Pile* getFullDeck();
+    Pile getFullDeck();
 }
 
 #endif //DUMMY_CARDS_H
