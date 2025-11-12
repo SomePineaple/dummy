@@ -29,10 +29,10 @@ namespace game {
         void addCard(const std::shared_ptr<Card>& card);
         bool dump(Pile& other, unsigned char numCards);
         [[nodiscard]] unsigned char size() const;
-        [[nodiscard]] Pile combine(const Pile& pile) const;
+        [[nodiscard]] Pile combine(const Pile* pile) const;
         [[nodiscard]] std::string toString() const;
         [[nodiscard]] unsigned short getValue() const;
-    private:
+    protected:
         std::vector<std::shared_ptr<Card>> cards;
     };
 

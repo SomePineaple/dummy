@@ -104,10 +104,10 @@ namespace game {
         return true;
     }
 
-    Pile Pile::combine(const Pile &pile) const {
+    Pile Pile::combine(const Pile* pile) const {
         auto p = Pile{};
         p.cards.insert(p.cards.begin(), cards.begin(), cards.end());
-        p.cards.insert(p.cards.end(), pile.cards.begin(), pile.cards.end());
+        p.cards.insert(p.cards.end(), pile->cards.begin(), pile->cards.end());
 
         return p;
     }
