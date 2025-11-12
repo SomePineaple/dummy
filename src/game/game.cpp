@@ -6,16 +6,9 @@
 
 namespace game {
     Game::Game() {
-        p1 = new HumanPlayer("Player 1");
-        p2 = new HumanPlayer("Player 2");
+        p1 = make_shared<HumanPlayer>("Player 1");
+        p2 = make_shared<HumanPlayer>("Player 2");
 
-        gs = new GameState(p1, true);
+        gs = make_unique<GameState>(p1, true);
     }
-
-    Game::~Game() {
-        delete p1;
-        delete p2;
-        delete gs;
-    }
-
 } // game

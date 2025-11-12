@@ -34,6 +34,8 @@ namespace game {
         [[nodiscard]] std::string toString() const;
         [[nodiscard]] unsigned short getValue() const;
         [[nodiscard]] std::vector<std::shared_ptr<Card>> getCards() const;
+        [[nodiscard]] std::shared_ptr<Card> getCard(unsigned char index) const;
+        void removeCard(unsigned char index);
     protected:
         std::vector<std::shared_ptr<Card>> cards;
     };

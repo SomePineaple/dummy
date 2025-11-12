@@ -150,4 +150,13 @@ namespace game {
         std::vector c(cards);
         return c;
     }
+
+    std::shared_ptr<Card> Pile::getCard(const unsigned char index) const {
+        return cards.at(index);
+    }
+
+    void Pile::removeCard(const unsigned char index) {
+        // TODO: Look into if a std::list would be a better option given the fact that this operation is very expensive
+        cards.erase(cards.begin() + index);
+    }
 }
