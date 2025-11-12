@@ -95,6 +95,6 @@ namespace game {
     }
 
     shared_ptr<Player> HumanPlayer::clone() const {
-        return make_shared<Player>(HumanPlayer{*this});
+        return make_shared<HumanPlayer>(HumanPlayer{*this});
     }
 } // game
