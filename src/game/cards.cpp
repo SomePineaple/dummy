@@ -55,7 +55,7 @@ namespace game {
         return str;
     }
 
-    unsigned short Card::getValue() const {
+    unsigned short Card::getPointValue() const {
         switch (value) {
             case 1:
                 return 15;
@@ -124,6 +124,12 @@ namespace game {
         std::shuffle(cards.begin(),cards.end(), g);
     }
 
+    unsigned short Pile::calcPoints() const {
+        return std::accumulate(cards.begin(), cards.end(), 0u, [](const auto& sum, const auto& card) {
+            return sum + card->getPointValue();
+        });
+    }
+
     unsigned char Pile::size() const {
         return cards.size();
     }
@@ -136,7 +142,7 @@ namespace game {
 
     unsigned short Pile::getValue() const {
         return std::accumulate(cards.begin(), cards.end(), 0u, [](unsigned short sum, const auto& card) {
-            return sum + card->getValue();
+            return sum + card->getPointValue();
         });
     }
 

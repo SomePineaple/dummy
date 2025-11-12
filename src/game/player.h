@@ -7,12 +7,18 @@
 #include "meld.h"
 
 namespace game {
+    struct GameState;
+
     class Player {
         Meld workingMeld;
-        void printGameState();
+        Pile hand;
+        std::vector<Meld> playedMelds;
+        std::string name;
+        void printGameState(const GameState& gs) const;
     public:
-        int calcPoints();
-        void runTurn();
+        Player(const std::string& name) : name(name){}
+        unsigned short calcPoints();
+        bool runTurn(GameState& gs);
     };
 } // game
 

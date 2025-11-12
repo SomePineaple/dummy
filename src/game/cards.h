@@ -16,7 +16,7 @@ namespace game {
         const Suit suit;
         const unsigned char value;
 
-        [[nodiscard]] unsigned short getValue() const;
+        [[nodiscard]] unsigned short getPointValue() const;
         [[nodiscard]] std::string toString() const;
     };
 
@@ -28,6 +28,7 @@ namespace game {
         void shuffle();
         void addCard(const std::shared_ptr<Card>& card);
         bool dump(Pile& other, unsigned char numCards);
+        [[nodiscard]] unsigned short calcPoints() const;
         [[nodiscard]] unsigned char size() const;
         [[nodiscard]] Pile combine(const Pile* pile) const;
         [[nodiscard]] std::string toString() const;

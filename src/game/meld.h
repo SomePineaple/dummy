@@ -14,7 +14,7 @@ namespace game {
         INVALID, RUN, SET
     };
 
-    class Meld : Pile {
+    class Meld : public Pile {
         std::optional<Meld*> buildingFrom;
     public:
         Meld();
