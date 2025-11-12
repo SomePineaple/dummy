@@ -45,10 +45,12 @@ namespace game {
                     hasDiscarded = askAndDiscard(gs);
                     if (hasDiscarded)
                         response = 'Q';
+                    else
+                        printf("Failed to discard\n");
                     break;
                 case 'P':
                     if (!playWorkingMeld(gs))
-                        printf("Cannot play the current meld, it is invalid.");
+                        printf("Cannot play the current meld, it is invalid.\n");
                     break;
                 case 'A':
                     askAndAdd(gs);
@@ -67,8 +69,17 @@ namespace game {
         printf("Which card number would you like to discard?\n");
         char response;
         std::cin >> response;
-        return discard(gs, response - '0');
+        return discard(gs, response - '1');
     }
+
+    void HumanPlayer::askAndAdd(GameState *gs) {
+        printf("Which card number would you like to add?\n");
+        char response;
+        std::cin >> response;
+        if (!addToWorkingMeld(response - '1'))
+            printf("That was not a valid card number");
+    }
+
 
 
     void HumanPlayer::printGameState(const GameState* gs) const {

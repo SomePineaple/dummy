@@ -20,6 +20,7 @@ namespace game {
         bool drawFromDiscard(GameState* gs, unsigned char numCards);
         bool playWorkingMeld(GameState* gs);
         bool discard(GameState* gs, unsigned char cardNumber);
+        bool addToWorkingMeld(unsigned char cardNumber);
     public:
         unsigned short calcPoints();
         void printMelds() const;

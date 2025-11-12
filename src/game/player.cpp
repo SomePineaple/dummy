@@ -48,6 +48,16 @@ namespace game {
         return true;
     }
 
+    bool Player::addToWorkingMeld(const unsigned char cardNumber) {
+        if (cardNumber >= hand.size())
+            return false;
+
+        workingMeld.addCard(hand.getCard(cardNumber));
+        hand.removeCard(cardNumber);
+
+        return true;
+    }
+
 
     unsigned short Player::calcPoints() {
         unsigned char sum = std::accumulate(playedMelds.begin(),playedMelds.end(), 0u, [](const auto& s, const auto& m) {
