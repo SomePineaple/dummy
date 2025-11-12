@@ -4,11 +4,37 @@
 
 #include "game.h"
 
+#include "humanplayer.h"
+
 namespace game {
+    GameState::GameState(const GameState* clone):
+        opponent(clone->opponent->clone()),
+        player(clone->player->clone()),
+        stockPile(clone->stockPile),
+        discardPile(clone->discardPile),
+        melds(clone->melds) {}
+
     Game::Game() {
         p1 = make_shared<HumanPlayer>("Player 1");
         p2 = make_shared<HumanPlayer>("Player 2");
 
-        gs = make_unique<GameState>(p1, true);
+        gs = make_unique<GameState>(p2, p1);
+
+        p1->drawFromStock(gs.get(), 7);
+        p2->drawFromStock(gs.get(), 7);
+    }
+
+    bool Game::isGameOver() const {
+        return p1->getHandSize() == 0 || p2->getHandSize() == 0 || gs->stockPile.size() == 0;
+    }
+
+    void Game::runRound() {
+        auto backupState = make_unique<GameState>(gs.get());
+
+        if (!gs->player->runTurn(gs.get())) {
+            gs.swap(backupState);
+        } else {
+            swap(gs->player, gs->opponent);
+        }
     }
 } // game

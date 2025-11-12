@@ -10,9 +10,11 @@
 #include "game.h"
 
 namespace game {
-    void Player::drawFromStock(GameState* gs) {
-        gs->stockPile.dump(hand, 1);
+    bool Player::drawFromStock(GameState* gs, const unsigned char numCards) {
+        if (!gs->stockPile.dump(hand, numCards)) return false;
+
         hand.sort();
+        return true;
     }
 
     bool Player::drawFromDiscard(GameState* gs, const unsigned char numCards) {
@@ -81,5 +83,11 @@ namespace game {
 
     bool Player::runTurn(GameState* gs) {
         return false;
+    }
+
+    shared_ptr<Player> Player::clone() const {
+        return make_shared<Player>(Player{
+            *this
+        });
     }
 } // game

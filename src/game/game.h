@@ -10,14 +10,16 @@ using namespace std;
 
 namespace game {
     struct GameState {
-        const std::shared_ptr<Player> opponent;
-        const bool p1Turn;
+        std::shared_ptr<Player> opponent;
+        shared_ptr<Player> player;
         Pile stockPile;
         Pile discardPile;
         vector<shared_ptr<Meld>> melds;
 
-        GameState(const shared_ptr<Player>& o, const bool p1Turn) :
-            opponent(o), p1Turn(p1Turn), stockPile(getFullDeck()) {}
+        GameState(const shared_ptr<Player>& o, const shared_ptr<Player>& p) :
+            opponent(o), player(p), stockPile(getFullDeck()) {}
+
+        explicit GameState(const GameState* clone);
     };
 
     class Game {
@@ -26,7 +28,8 @@ namespace game {
         unique_ptr<GameState> gs;
     public:
         Game();
-        bool isGameOver();
+        void runRound();
+        [[nodiscard]] bool isGameOver() const;
     };
 } // game
 

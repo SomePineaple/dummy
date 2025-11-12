@@ -12,5 +12,5 @@ add_executable(dummy src/main.cpp
         src/game/player.h
         src/game/game.cpp
         src/game/game.h
-        src/game/HumanPlayer.cpp
-        src/game/HumanPlayer.h)
+        src/game/humanplayer.cpp
+        src/game/humanplayer.h)

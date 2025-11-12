@@ -2,7 +2,7 @@
 // Created by nj60 on 11/12/25.
 //
 
-#include "HumanPlayer.h"
+#include "humanplayer.h"
 
 #include <iostream>
 #include "game.h"
@@ -23,7 +23,7 @@ namespace game {
             case 'S':
                 if (gs->stockPile.size() == 0)
                     return false;
-                drawFromStock(gs);
+                drawFromStock(gs, 1);
                 break;
             case 'd':
             case 'D':
@@ -80,8 +80,6 @@ namespace game {
             printf("That was not a valid card number");
     }
 
-
-
     void HumanPlayer::printGameState(const GameState* gs) const {
         printf("Your opponent has %i cards, and has played:\n", gs->opponent->getHandSize());
         gs->opponent->printMelds();
@@ -94,5 +92,9 @@ namespace game {
         for (auto& m : playedMelds) {
             std::cout << m->toString() << std::endl;
         }
+    }
+
+    shared_ptr<Player> HumanPlayer::clone() const {
+        return make_shared<Player>(HumanPlayer{*this});
     }
 } // game

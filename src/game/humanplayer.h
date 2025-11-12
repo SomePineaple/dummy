@@ -17,6 +17,7 @@ namespace game {
         HumanPlayer(const std::string&  n) : name(n) {}
 
         bool runTurn(GameState* gs) override;
+        [[nodiscard]] std::shared_ptr<Player> clone() const override;
     };
 } // game
 
