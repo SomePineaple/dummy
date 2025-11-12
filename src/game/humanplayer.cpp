@@ -7,7 +7,7 @@
 #include <iostream>
 #include "game.h"
 
-namespace game {
+namespace game::clients {
     bool HumanPlayer::runTurn(GameState* gs) {
         if (gs == nullptr)
             return false;

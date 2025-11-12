@@ -7,14 +7,14 @@
 
 #include "player.h"
 
-namespace game {
+namespace game::clients {
     class HumanPlayer : public Player {
         std::string name;
         void printGameState(const GameState* gs) const;
         bool askAndDiscard(GameState* gs);
         void askAndAdd(GameState* gs);
     public:
-        HumanPlayer(const std::string&  n) : name(n) {}
+        explicit HumanPlayer(const std::string&  n) : name(n) {}
 
         bool runTurn(GameState* gs) override;
         [[nodiscard]] std::shared_ptr<Player> clone() const override;

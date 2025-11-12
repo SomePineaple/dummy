@@ -9,7 +9,9 @@
 
 namespace game {
     struct GameState;
+}
 
+namespace game::clients {
     class Player {
     protected:
         Meld workingMeld;
@@ -21,6 +23,8 @@ namespace game {
         bool discard(GameState* gs, unsigned char cardNumber);
         bool addToWorkingMeld(unsigned char cardNumber);
     public:
+        virtual ~Player() = default;
+
         bool drawFromStock(GameState* gs, unsigned char numCards);
         unsigned short calcPoints();
         void printMelds() const;

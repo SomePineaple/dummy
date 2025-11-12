@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 4.0)
 project(dummy)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(dummy src/main.cpp
         src/game/cards.cpp
@@ -13,4 +14,6 @@ add_executable(dummy src/main.cpp
         src/game/game.cpp
         src/game/game.h
         src/game/humanplayer.cpp
-        src/game/humanplayer.h)
+        src/game/humanplayer.h
+        src/signalbot/signalplayer.cpp
+        src/signalbot/signalplayer.h)

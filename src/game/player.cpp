@@ -9,7 +9,7 @@
 
 #include "game.h"
 
-namespace game {
+namespace game::clients {
     bool Player::drawFromStock(GameState* gs, const unsigned char numCards) {
         if (!gs->stockPile.dump(hand, numCards)) return false;
 
