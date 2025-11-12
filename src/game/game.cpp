@@ -7,6 +7,11 @@
 #include "humanplayer.h"
 
 namespace game {
+    GameState::GameState(const shared_ptr<Player>& o, const shared_ptr<Player>& p) :
+            opponent(o), player(p), stockPile(getFullDeck()) {
+        stockPile.shuffle();
+    }
+
     GameState::GameState(const GameState* clone):
         opponent(clone->opponent->clone()),
         player(clone->player->clone()),

@@ -16,8 +16,7 @@ namespace game {
         Pile discardPile;
         vector<shared_ptr<Meld>> melds;
 
-        GameState(const shared_ptr<Player>& o, const shared_ptr<Player>& p) :
-            opponent(o), player(p), stockPile(getFullDeck()) {}
+        GameState(const shared_ptr<Player>& o, const shared_ptr<Player>& p);
 
         explicit GameState(const GameState* clone);
     };
