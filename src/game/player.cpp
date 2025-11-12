@@ -18,11 +18,46 @@ namespace game {
         char response;
         std::cin >> response;
         switch (response) {
+            case 's':
             case 'S':
+                if (gs.stockPile.size() == 0)
+                    return false;
+                drawFromStock(gs);
+                break;
+            case 'd':
+            case 'D':
+                printf("How many cards would you like to draw?\n");
+                std::cin >> response;
+                drawFromDiscard(gs, response - '0');
                 break;
             default:
                 return false;
         }
+
+        do {
+            printGameState(gs);
+            printf("[P] to play a meld\n[A] to add a card to the meld\n[D] to discard\n[Q] to quit\n");
+            std::cin >> response;
+
+            switch (response) {
+                case 'D':
+                    hasDiscarded = askAndDiscard();
+                    if (hasDiscarded)
+                        response = 'Q';
+                    break;
+                case 'P':
+                    if (!playWorkingMeld(gs))
+                        printf("Cannot play the current meld, it is invalid.");
+                    break;
+                case 'A':
+                    askAndAdd();
+                    break;
+                case 'Q':
+                    break;
+                default:
+                    return false;
+            }
+        } while (response != 'Q');
 
         return hasDiscarded && workingMeld.size() == 0;
     }
