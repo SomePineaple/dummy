@@ -4,6 +4,8 @@ project(dummy)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+add_subdirectory(deps/njhomann/json)
+
 add_executable(dummy src/main.cpp
         src/game/cards.cpp
         src/game/cards.h
@@ -17,3 +19,6 @@ add_executable(dummy src/main.cpp
         src/game/humanplayer.h
         src/signalbot/signalplayer.cpp
         src/signalbot/signalplayer.h)
+
+target_link_libraries(dummy PRIVATE nlohmann_json)
+target_include_directories(dummy PRIVATE deps/njhomann/json/include)

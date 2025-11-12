@@ -10,10 +10,12 @@
 namespace game::clients {
     class SignalPlayer final : public Player {
         const std::string phoneNumber;
+        void sendUserMessage(const std::string& message);
+        std::string recieveUserMessage();
     public:
         explicit SignalPlayer(const std::string& number);
         bool runTurn(GameState *gs) override;
-        std::shared_ptr<Player> clone() const override;
+        //std::shared_ptr<Player> clone() const override;
     };
 }
 
