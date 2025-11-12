@@ -32,6 +32,7 @@ namespace game {
         [[nodiscard]] Pile combine(const Pile* pile) const;
         [[nodiscard]] std::string toString() const;
         [[nodiscard]] unsigned short getValue() const;
+        [[nodiscard]] std::vector<std::shared_ptr<Card>> getCards() const;
     protected:
         std::vector<std::shared_ptr<Card>> cards;
     };

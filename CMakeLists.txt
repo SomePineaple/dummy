@@ -7,4 +7,8 @@ add_executable(dummy src/main.cpp
         src/game/cards.cpp
         src/game/cards.h
         src/game/meld.cpp
-        src/game/meld.h)
+        src/game/meld.h
+        src/game/player.cpp
+        src/game/player.h
+        src/game/game.cpp
+        src/game/game.h)

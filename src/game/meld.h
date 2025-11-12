@@ -20,6 +20,7 @@ namespace game {
         Meld();
         Meld(Meld& buildingFrom);
         [[nodiscard]] MeldType getMeldType() const;
+        bool tryBuildFrom(Meld& buildingFrom);
     };
 } // game
 

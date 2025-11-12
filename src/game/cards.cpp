@@ -139,4 +139,9 @@ namespace game {
             return sum + card->getValue();
         });
     }
+
+    std::vector<std::shared_ptr<Card>> Pile::getCards() const {
+        std::vector c(cards);
+        return c;
+    }
 }
