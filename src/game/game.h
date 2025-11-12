@@ -12,9 +12,9 @@ namespace game {
     struct GameState {
         const Player* opponent;
         const bool p1Turn;
-        const Pile stockPile;
-        const Pile discardPile;
-        const vector<shared_ptr<Meld>> melds;
+        Pile stockPile;
+        Pile discardPile;
+        vector<shared_ptr<Meld>> melds;
 
         GameState(const Player* o, const bool p1Turn) :
             opponent(o), p1Turn(p1Turn), stockPile(getFullDeck()) {}

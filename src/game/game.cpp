@@ -6,8 +6,8 @@
 
 namespace game {
     Game::Game() {
-        p1 = new Player("Player 1");
-        p2 = new Player("Player 2");
+        p1 = new HumanPlayer("Player 1");
+        p2 = new HumanPlayer("Player 2");
 
         gs = new GameState(p1, true);
     }

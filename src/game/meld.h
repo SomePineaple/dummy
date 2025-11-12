@@ -15,12 +15,11 @@ namespace game {
     };
 
     class Meld : public Pile {
-        std::optional<Meld*> buildingFrom;
+        Meld* buildingFrom;
     public:
         Meld();
-        Meld(Meld& buildingFrom);
         [[nodiscard]] MeldType getMeldType() const;
-        bool tryBuildFrom(Meld& buildingFrom);
+        bool tryBuildFrom(Meld* buildingFrom);
     };
 } // game
 

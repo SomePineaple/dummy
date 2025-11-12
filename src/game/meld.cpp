@@ -30,17 +30,13 @@ namespace game {
     }
 
     Meld::Meld() {
-        this->buildingFrom = std::nullopt;
-    }
-
-    Meld::Meld(Meld &buildingFrom) {
-        this->buildingFrom = &buildingFrom;
+        this->buildingFrom = nullptr;
     }
 
     MeldType Meld::getMeldType() const {
         auto c = cards;
-        if (buildingFrom != std::nullopt) {
-            c = combine(buildingFrom.value()).getCards();
+        if (buildingFrom != nullptr) {
+            c = combine(buildingFrom).getCards();
         }
 
         if (isValidSet(c))
@@ -51,11 +47,11 @@ namespace game {
         return INVALID;
     }
 
-    bool Meld::tryBuildFrom(Meld& buildingFrom) {
-        this->buildingFrom = &buildingFrom;
+    bool Meld::tryBuildFrom(Meld* buildingFrom) {
+        this->buildingFrom = buildingFrom;
         if (getMeldType() != INVALID)
             return true;
-        this->buildingFrom = std::nullopt;
+        this->buildingFrom = nullptr;
         return false;
     }
 } // game
