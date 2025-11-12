@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <random>
+#include <algorithm>
 
 namespace game {
     unsigned char getSortValue(const std::shared_ptr<Card>& card) {
