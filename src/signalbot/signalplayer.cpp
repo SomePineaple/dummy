@@ -41,21 +41,32 @@ namespace game::clients {
             return false;
 
         bool hasDiscarded = false;
-        sendGameState(gs);
-        sendUserMessage("Send:\n[Stock] to draw from stock\n[Discard] to draw from discard");
-        string userResponse = recieveUserMessage();
-        if (userResponse == "Stock") {
-            if (!drawFromStock(gs, 1)) return false;
-        } else if (userResponse == "Discard") {
-            sendUserMessage("How many cards would you like to draw?");
-            string reply = recieveUserMessage();
-            try {
-                if (!drawFromDiscard(gs, atoi(reply.c_str()))) throw out_of_range("To big");
-            } catch (const exception&) {
-                sendUserMessage("You didn't provide a valid number");
-                return false;
+        bool hasDrawn = false;
+        do {
+            sendGameState(gs);
+            sendUserMessage("Send:\n[Stock] to draw from stock\n[Discard] to draw from discard");
+            string userResponse = recieveUserMessage();
+            if (userResponse == "Stock") {
+                if (!drawFromStock(gs, 1)) return false;
+                else {
+                    sendUserMessage(format("You just drew {}", hand.getCards().back()->toString()));
+                    hand.sort();
+                    hasDrawn = true;
+                }
+            } else if (userResponse == "Discard") {
+                sendUserMessage("How many cards would you like to draw?");
+                string reply = recieveUserMessage();
+                try {
+                    if (!drawFromDiscard(gs, atoi(reply.c_str()))) throw out_of_range("To big");
+                    else hasDrawn = true;
+                } catch (const exception&) {
+                    sendUserMessage("You didn't provide a valid number");
+                    return false;
+                }
+            } else {
+                sendUserMessage("That was not a valid response");
             }
-        }
+        } while (!hasDrawn);
 
         bool loop = true;
         do {
@@ -70,8 +81,10 @@ namespace game::clients {
             } else if (userResponse == "Discard") {
                 if (workingMeld.size() != 0)
                     sendUserMessage("You cannot discard yet, you are building a meld to play!");
-                else if (askAndDiscard(gs))
+                else if (askAndDiscard(gs)) {
+                    sendUserMessage("Your opponent is playing...");
                     return true;
+                }
             } else if (userResponse == "Reset") {
                 loop = false;
             } else {
@@ -107,12 +120,12 @@ namespace game::clients {
 
     void SignalPlayer::sendGameState(const GameState* gs) {
         string message;
-        message += std::format("Your opponent has %i cards, and has played:\n", gs->opponent->getHandSize());
+        message += std::format("Your opponent has {} cards, and has played:\n", gs->opponent->getHandSize());
         message += gs->opponent->printMelds();
-        message += std::format("Discard pile:\n%s\n", gs->discardPile.toString());
-        message += std::format("Your hand:\n%s\n", hand.toString());
-        message += std::format("Current building a meld:\n%s\n", workingMeld.toString());
-        message += std::format("You have played:\n%s\n", printMelds());
+        message += std::format("Discard pile:\n{}\n", gs->discardPile.toString());
+        message += std::format("Your hand:\n{}\n", hand.toString());
+        message += std::format("Current building a meld:\n{}\n", workingMeld.toString());
+        message += std::format("You have played:\n{}\n", printMelds());
 
         sendUserMessage(message);
     }
@@ -122,18 +135,27 @@ namespace game::clients {
         json req = {
             {"jsonrpc", "2.0"},
             {"method", "send"},
-            "params", {{"message", message}, {"recipient", phoneNumber}},
+            {"params", {{"message", message}, {"recipient", phoneNumber}, {"expiresInSeconds", 3600}}},
             {"id", messageId}
         };
 
-        asio::write(*signalCli, asio::buffer(req.dump()));
+        printf("Sending message...\n");
+
+        asio::write(*signalCli, asio::buffer(req.dump() + '\n'));
 
         // Wait for signal-cli to confirm the message was sent.
         bool recievedResult = false;
         while (!recievedResult) {
+            printf("awaiting response...\n");
             string response;
-            asio::read_until(*signalCli, asio::dynamic_buffer(response), '\n');
-            auto res = json::parse(response);
+            asio::read_until(*signalCli, asio::dynamic_buffer(response), "}\n");
+            json res;
+            try {
+                res = json::parse(response);
+            } catch (const exception& e) {
+                printf("Failed to parse response. Err: %s\n Response: %s\n", e.what(), response.c_str());
+                continue;
+            }
             if (res.contains("id") && res["id"] == messageId && res.contains("result")) {
                 auto result = res["result"]["results"][0]["type"];
                 if (!(result == "SUCCESS")) {
@@ -141,6 +163,7 @@ namespace game::clients {
                     exit(1);
                 } else {
                     recievedResult = true;
+                    printf("got response\n");
                 }
             } else {
                 printf("got response that doesn't make sense: %s\n", response.c_str());
@@ -157,9 +180,9 @@ namespace game::clients {
             asio::read_until(*signalCli, asio::dynamic_buffer(in), '\n');
             auto res = json::parse(in);
             if (res.contains("method") && res["method"] == "receive" && res["params"]["envelope"].contains("dataMessage")) {
-                auto message = res["params"]["envelope"]["dataMessage"];
-                if (message["message"].is_string()) {
-                    message = message["message"];
+                auto envelope = res["params"]["envelope"];
+                if (envelope["dataMessage"]["message"].is_string() && envelope["sourceNumber"] == phoneNumber) {
+                    message = envelope["dataMessage"]["message"];
                     recievedMessage = true;
                 }
             }

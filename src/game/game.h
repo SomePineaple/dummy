@@ -27,6 +27,7 @@ namespace game {
         unique_ptr<GameState> gs;
     public:
         Game();
+        Game(const GameState& gs);
         void runRound();
         [[nodiscard]] bool isGameOver() const;
     };

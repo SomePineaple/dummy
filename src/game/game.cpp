@@ -5,6 +5,8 @@
 #include "game.h"
 
 #include "humanplayer.h"
+#include "player.h"
+#include <memory>
 
 namespace game {
     using namespace clients;
@@ -29,6 +31,13 @@ namespace game {
 
         p1->drawFromStock(gs.get(), 7);
         p2->drawFromStock(gs.get(), 7);
+    }
+
+    Game::Game(const GameState& gs) {
+        p1 = gs.player;
+        p2 = gs.opponent;
+
+        this->gs = make_unique<GameState>(gs);
     }
 
     bool Game::isGameOver() const {

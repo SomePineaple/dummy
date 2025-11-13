@@ -10,19 +10,11 @@
 
 namespace game::clients {
     bool Player::drawFromStock(GameState* gs, const unsigned char numCards) {
-        if (!gs->stockPile.dump(hand, numCards)) return false;
-
-        hand.sort();
-        return true;
+        return gs->stockPile.dump(hand, numCards);
     }
 
     bool Player::drawFromDiscard(GameState* gs, const unsigned char numCards) {
-        if (gs->discardPile.dump(hand, numCards)) {
-            hand.sort();
-            return true;
-        }
-
-        return false;
+        return gs->discardPile.dump(hand, numCards);
     }
 
     bool Player::playWorkingMeld(GameState* gs) {
@@ -93,5 +85,5 @@ namespace game::clients {
         });
     }
 
-    void cleanUp(){}
+    void Player::cleanUp(){}
 } // game
