@@ -5,6 +5,7 @@
 #include "signalplayer.h"
 
 #include "nlohmann/json.hpp"
+#include <boost/process/v2/environment.hpp>
 #include <iostream>
 #include <format>
 #include <memory>
@@ -15,6 +16,7 @@
 
 using json = nlohmann::json;
 namespace asio = boost::asio;
+namespace env = boost::process::environment;
 
 int randomInt() {
     std::random_device rd;
@@ -29,7 +31,7 @@ namespace game::clients {
     SignalPlayer::SignalPlayer(const std::string& playerNumber, const std::string& botNumber) : phoneNumber(playerNumber) {
         ctx = make_shared<asio::io_context>();
 
-        boost::process::popen* p = new boost::process::popen(*ctx, "/usr/bin/signal-cli", {"-a", botNumber, "jsonRpc"});
+        boost::process::popen* p = new boost::process::popen(*ctx, env::find_executable("signal-cli"), {"-a", botNumber, "jsonRpc"});
 
         signalCli = shared_ptr<boost::process::popen>(p);
 
@@ -201,6 +203,7 @@ namespace game::clients {
     }
 
     void SignalPlayer::cleanUp() {
+        sendUserMessage("Stopping server...");
         cout << "Closing signal CLI..." << endl;
         signalCli->request_exit();
         ctx->stop();
