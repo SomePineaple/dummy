@@ -11,7 +11,7 @@ namespace game::clients {
 
 
     bool SignalPlayer::runTurn(GameState* gs) {
-        
+        // TODO: Have the signal player basically just do the same thing as the human player, but getting responses from the signal bot
         return false;
     }
 }
