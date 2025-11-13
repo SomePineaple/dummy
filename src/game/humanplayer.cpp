@@ -82,7 +82,7 @@ namespace game::clients {
 
     void HumanPlayer::printGameState(const GameState* gs) const {
         printf("Your opponent has %i cards, and has played:\n", gs->opponent->getHandSize());
-        gs->opponent->printMelds();
+        std::cout << gs->opponent->printMelds();
 
         printf("Discard pile:\n%s\n", gs->discardPile.toString().c_str());
         printf("Your hand:\n%s\n", hand.toString().c_str());
@@ -95,6 +95,6 @@ namespace game::clients {
     }
 
     shared_ptr<Player> HumanPlayer::clone() const {
-        return make_shared<HumanPlayer>(HumanPlayer{*this});
+        return make_shared<HumanPlayer>(*this);
     }
 } // game

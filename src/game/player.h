@@ -6,6 +6,7 @@
 #define DUMMY_PLAYER_H
 
 #include "meld.h"
+#include <string>
 
 namespace game {
     struct GameState;
@@ -27,10 +28,11 @@ namespace game::clients {
 
         bool drawFromStock(GameState* gs, unsigned char numCards);
         unsigned short calcPoints();
-        void printMelds() const;
+        std::string printMelds() const;
         [[nodiscard]] unsigned char getHandSize() const;
         virtual bool runTurn(GameState* gs);
         [[nodiscard]] virtual std::shared_ptr<Player> clone() const;
+        virtual void cleanUp();
     };
 } // game
 

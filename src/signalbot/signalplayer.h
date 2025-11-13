@@ -6,6 +6,7 @@
 #define DUMMY_SIGNALPLAYER_H
 
 #include <boost/process.hpp>
+#include <memory>
 
 #include "../game/player.h"
 
@@ -14,14 +15,17 @@ namespace game::clients {
         const std::string phoneNumber;
         void sendUserMessage(const std::string& message);
         void sendGameState(const GameState* gs);
+        void askAndAdd();
+        bool askAndDiscard(GameState* gs);
         std::string recieveUserMessage();
-        boost::process::popen signalCli;
-        boost::asio::io_context ctx;
+        std::shared_ptr<boost::process::popen> signalCli;
+        std::shared_ptr<boost::asio::io_context> ctx;
     public:
         explicit SignalPlayer(const std::string& playerNumber, const std::string& botNumber);
         void close();
         bool runTurn(GameState *gs) override;
-        //std::shared_ptr<Player> clone() const override;
+        [[nodiscard]] std::shared_ptr<Player> clone() const override;
+        void cleanUp() override;
     };
 }
 

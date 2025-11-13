@@ -4,7 +4,6 @@
 
 #include "player.h"
 
-#include <iostream>
 #include <numeric>
 
 #include "game.h"
@@ -71,10 +70,13 @@ namespace game::clients {
         return sum;
     }
 
-    void Player::printMelds() const {
+    std::string Player::printMelds() const {
+        std::string meldsStr;
         for (const auto& m : playedMelds) {
-            std::cout << m->toString() << std::endl;
+            meldsStr += m->toString() + '\n';
         }
+
+        return meldsStr;
     }
 
     unsigned char Player::getHandSize() const {
@@ -90,4 +92,6 @@ namespace game::clients {
             *this
         });
     }
+
+    void cleanUp(){}
 } // game
