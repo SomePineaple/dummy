@@ -5,7 +5,7 @@
 #include "signalplayer.h"
 
 #include "nlohmann/json.hpp"
-#include <cstdlib>
+#include <iostream>
 #include <format>
 #include <memory>
 #include <random>
@@ -33,7 +33,7 @@ namespace game::clients {
 
         signalCli = shared_ptr<boost::process::popen>(p);
 
-        sendUserMessage("Someone would like to play a game of Rummy with you!");
+        sendUserMessage("Someone would like to play a game of Rummy with you! (respond [kill] to any prompt to stop the game)");
     }
 
     bool SignalPlayer::runTurn(GameState* gs) {
@@ -120,17 +120,17 @@ namespace game::clients {
 
     void SignalPlayer::sendGameState(const GameState* gs) {
         string message;
-        message += std::format("Your opponent has {} cards, and has played:\n", gs->opponent->getHandSize());
+        message += format("Your opponent has {} cards, and has played:\n", gs->opponent->getHandSize());
         message += gs->opponent->printMelds();
-        message += std::format("Discard pile:\n{}\n", gs->discardPile.toString());
-        message += std::format("Your hand:\n{}\n", hand.toString());
-        message += std::format("Current building a meld:\n{}\n", workingMeld.toString());
-        message += std::format("You have played:\n{}\n", printMelds());
+        message += format("Discard pile:\n{}\n", gs->discardPile.toString());
+        message += format("Your hand:\n{}\n", hand.toString());
+        message += format("Current building a meld:\n{}\n", workingMeld.toString());
+        message += format("You have played:\n{}\n", printMelds());
 
         sendUserMessage(message);
     }
 
-    void SignalPlayer::sendUserMessage(const std::string& message) {
+    void SignalPlayer::sendUserMessage(const string& message) {
         int messageId = randomInt();
         json req = {
             {"jsonrpc", "2.0"},
@@ -139,34 +139,34 @@ namespace game::clients {
             {"id", messageId}
         };
 
-        printf("Sending message...\n");
+        cout << "Sending message..." << endl;
 
         asio::write(*signalCli, asio::buffer(req.dump() + '\n'));
 
         // Wait for signal-cli to confirm the message was sent.
         bool recievedResult = false;
         while (!recievedResult) {
-            printf("awaiting response...\n");
+            cout << "awaiting response..." << endl;
             string response;
             asio::read_until(*signalCli, asio::dynamic_buffer(response), "}\n");
             json res;
             try {
                 res = json::parse(response);
             } catch (const exception& e) {
-                printf("Failed to parse response. Err: %s\n Response: %s\n", e.what(), response.c_str());
+                cout << format("Failed to parse response. Err: {}\n Response: {}", e.what(), response) << endl;
                 continue;
             }
             if (res.contains("id") && res["id"] == messageId && res.contains("result")) {
                 auto result = res["result"]["results"][0]["type"];
                 if (!(result == "SUCCESS")) {
-                    printf("Failed to send message to user: got response %s\n", response.c_str());
+                    cout << format("Failed to send message to user: got response {}", response) << endl;
                     exit(1);
                 } else {
                     recievedResult = true;
-                    printf("got response\n");
+                    cout << "got response" << endl;
                 }
             } else {
-                printf("got response that doesn't make sense: %s\n", response.c_str());
+                cout << format("got response that doesn't make sense: {}", response) << endl;
             }
         }
     }
@@ -188,6 +188,11 @@ namespace game::clients {
             }
         }
 
+        if (message == "kill") {
+            cleanUp();
+            exit(0);
+        }
+
         return message;
     }
 
@@ -196,10 +201,10 @@ namespace game::clients {
     }
 
     void SignalPlayer::cleanUp() {
-        printf("Closing signal CLI...\n");
+        cout << "Closing signal CLI..." << endl;
         signalCli->request_exit();
         ctx->stop();
         signalCli->wait();
-        printf("Signal CLI closed\n");
+        cout << "Signal CLI closed" << endl;
     }
 }

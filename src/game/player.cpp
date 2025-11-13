@@ -14,7 +14,11 @@ namespace game::clients {
     }
 
     bool Player::drawFromDiscard(GameState* gs, const unsigned char numCards) {
-        return gs->discardPile.dump(hand, numCards);
+        if (gs->discardPile.dump(hand, numCards)) {
+            if (numCards != 1)
+                hand.dump(workingMeld, 1);
+        }
+        return false;
     }
 
     bool Player::playWorkingMeld(GameState* gs) {
