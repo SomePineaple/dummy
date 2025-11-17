@@ -6,7 +6,7 @@
 
 #include <iostream>
 #include <string>
-#include <format>
+#include <boost/format.hpp>
 #include "game.h"
 
 namespace game::clients {
@@ -16,7 +16,7 @@ namespace game::clients {
 
         bool hasDiscarded = false;
         printGameState(gs);
-        cout << format("You are {}\nType:\n[S] to draw from stock\n[D] to draw from discard\n", name) << endl;
+        cout << boost::format("You are %s\nType:\n[S] to draw from stock\n[D] to draw from discard\n") % name << endl;
 
         char response;
         cin >> response;
@@ -96,13 +96,13 @@ namespace game::clients {
     }
 
     void HumanPlayer::printGameState(const GameState* gs) const {
-        cout << format("Your opponent has {} cards, and has played:\n", gs->opponent->getHandSize());
+        cout << boost::format("Your opponent has %s cards, and has played:\n") % gs->opponent->getHandSize();
         cout << gs->opponent->printMelds();
 
-        cout << format("Discard pile:\n{}\n", gs->discardPile.toString());
-        cout << format("Your hand:\n{}\n", hand.toString());
-        cout << format("Current building a meld:\n{}\n", workingMeld.toString());
-        cout << format("You have played:\n");
+        cout << boost::format("Discard pile:\n%s\n") % gs->discardPile.toString();
+        cout << boost::format("Your hand:\n%s\n") % hand.toString();
+        cout << boost::format("Current building a meld:\n%s\n") % workingMeld.toString();
+        cout << "You have played:\n";
 
         for (auto& m : playedMelds) {
             cout << m->toString() << ", ";

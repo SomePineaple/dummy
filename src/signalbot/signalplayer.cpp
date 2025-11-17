@@ -7,7 +7,7 @@
 #include "nlohmann/json.hpp"
 #include <boost/process/v2/environment.hpp>
 #include <iostream>
-#include <format>
+#include <boost/format.hpp>
 #include <memory>
 #include <random>
 #include <boost/asio.hpp>
@@ -31,9 +31,7 @@ namespace game::clients {
     SignalPlayer::SignalPlayer(const std::string& playerNumber, const std::string& botNumber) : phoneNumber(playerNumber) {
         ctx = make_shared<asio::io_context>();
 
-        boost::process::popen* p = new boost::process::popen(*ctx, env::find_executable("signal-cli"), {"-a", botNumber, "jsonRpc"});
-
-        signalCli = shared_ptr<boost::process::popen>(p);
+        signalCli = shared_ptr<boost::process::popen>(new boost::process::popen(*ctx, env::find_executable("signal-cli"), {"-a", botNumber, "jsonRpc"}));
 
         sendUserMessage("Someone would like to play a game of Rummy with you! (respond [kill] to any prompt to stop the game)");
     }
@@ -47,17 +45,17 @@ namespace game::clients {
         do {
             sendGameState(gs);
             sendUserMessage("Send:\n[Stock] to draw from stock\n[Discard] to draw from discard");
-            string userResponse = recieveUserMessage();
+            string userResponse = receiveUserMessage();
             if (userResponse == "Stock") {
                 if (!drawFromStock(gs, 1)) return false;
                 else {
-                    sendUserMessage(format("You just drew {}", hand.getCards().back()->toString()));
+                    sendUserMessage((boost::format("You just drew %s") % hand.getCards().back()->toString()).str());
                     hand.sort();
                     hasDrawn = true;
                 }
             } else if (userResponse == "Discard") {
                 sendUserMessage("How many cards would you like to draw?");
-                string reply = recieveUserMessage();
+                string reply = receiveUserMessage();
                 try {
                     if (!drawFromDiscard(gs, atoi(reply.c_str()))) throw out_of_range("To big");
                     else hasDrawn = true;
@@ -74,7 +72,7 @@ namespace game::clients {
         do {
             sendGameState(gs);
             sendUserMessage("Send:\n[Play] to play the meld\n[Add] to add a card to the meld\n[Discard] to discard\n[Reset] to reset your turn (cheater)");
-            string userResponse = recieveUserMessage();
+            string userResponse = receiveUserMessage();
             if (userResponse == "Play") {
                 if (!playWorkingMeld(gs))
                     sendUserMessage("Can't play the working meld, it is no valid.");
@@ -99,7 +97,7 @@ namespace game::clients {
 
     bool SignalPlayer::askAndDiscard(GameState* gs) {
         sendUserMessage("Which card would you like to discard?");
-        string userResponse = recieveUserMessage();
+        string userResponse = receiveUserMessage();
         for (int i = 0; i < hand.size(); i++) {
             if (hand.getCard(i)->toString() == userResponse) {
                 return discard(gs, i);
@@ -111,7 +109,7 @@ namespace game::clients {
 
     void SignalPlayer::askAndAdd() {
         sendUserMessage("Which card would you like to add?");
-        string userResponse = recieveUserMessage();
+        string userResponse = receiveUserMessage();
         for (int i = 0; i < hand.size(); i++) {
             if (hand.getCard(i)->toString() == userResponse) {
                 if (!addToWorkingMeld(i))
@@ -122,17 +120,17 @@ namespace game::clients {
 
     void SignalPlayer::sendGameState(const GameState* gs) {
         string message;
-        message += format("Your opponent has {} cards, and has played:\n", gs->opponent->getHandSize());
+        message += (boost::format("Your opponent has %s cards, and has played:\n") % gs->opponent->getHandSize()).str();
         message += gs->opponent->printMelds();
-        message += format("Discard pile:\n{}\n", gs->discardPile.toString());
-        message += format("Your hand:\n{}\n", hand.toString());
-        message += format("Current building a meld:\n{}\n", workingMeld.toString());
-        message += format("You have played:\n{}\n", printMelds());
+        message += (boost::format("Discard pile:\n%s\n") % gs->discardPile.toString()).str();
+        message += (boost::format("Your hand:\n%s\n") % hand.toString()).str();
+        message += (boost::format("Current building a meld:\n%s\n") % workingMeld.toString()).str();
+        message += (boost::format("You have played:\n%s\n") % printMelds()).str();
 
         sendUserMessage(message);
     }
 
-    void SignalPlayer::sendUserMessage(const string& message) {
+    void SignalPlayer::sendUserMessage(const string& message) const {
         int messageId = randomInt();
         json req = {
             {"jsonrpc", "2.0"},
@@ -155,29 +153,29 @@ namespace game::clients {
             try {
                 res = json::parse(response);
             } catch (const exception& e) {
-                cout << format("Failed to parse response. Err: {}\n Response: {}", e.what(), response) << endl;
+                cout << boost::format("Failed to parse response. Err: %s\n Response: %s") % e.what() % response << endl;
                 continue;
             }
             if (res.contains("id") && res["id"] == messageId && res.contains("result")) {
                 auto result = res["result"]["results"][0]["type"];
-                if (!(result == "SUCCESS")) {
-                    cout << format("Failed to send message to user: got response {}", response) << endl;
+                if (result != "SUCCESS") {
+                    cout << boost::format("Failed to send message to user: got response %s") % response << endl;
                     exit(1);
-                } else {
-                    recievedResult = true;
-                    cout << "got response" << endl;
                 }
+
+                recievedResult = true;
+                cout << "got response" << endl;
             } else {
-                cout << format("got response that doesn't make sense: {}", response) << endl;
+                cout << boost::format("got response that doesn't make sense: %s") % response << endl;
             }
         }
     }
 
     // Waits for the user to send a proper dataMessage and returns it
-    std::string SignalPlayer::recieveUserMessage() {
-        bool recievedMessage = false;
+    std::string SignalPlayer::receiveUserMessage() {
+        bool receivedMessage = false;
         string message;
-        while (!recievedMessage) {
+        while (!receivedMessage) {
             string in;
             asio::read_until(*signalCli, asio::dynamic_buffer(in), '\n');
             auto res = json::parse(in);
@@ -185,7 +183,7 @@ namespace game::clients {
                 auto envelope = res["params"]["envelope"];
                 if (envelope["dataMessage"]["message"].is_string() && envelope["sourceNumber"] == phoneNumber) {
                     message = envelope["dataMessage"]["message"];
-                    recievedMessage = true;
+                    receivedMessage = true;
                 }
             }
         }
