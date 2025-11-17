@@ -31,7 +31,7 @@ namespace rummy::clients {
     SignalPlayer::SignalPlayer(const std::string& playerNumber, const std::string& botNumber) : phoneNumber(playerNumber) {
         ctx = make_shared<asio::io_context>();
 
-        // I don't know why, but make_shared just doesn't work here, it can't find the contrstructo
+        // I don't know why, but make_shared just doesn't work here, it can't find the contrstructor
         signalCli = shared_ptr<bp::popen>(new bp::popen(*ctx, env::find_executable("signal-cli"), {"-a", botNumber, "jsonRpc"}));
 
         sendUserMessage("Someone would like to play a game of Rummy with you! (respond [kill] to any prompt to stop the game)");
@@ -41,7 +41,6 @@ namespace rummy::clients {
         if (gs == nullptr)
             return false;
 
-        bool hasDiscarded = false;
         bool hasDrawn = false;
         do {
             sendGameState(gs);
@@ -49,17 +48,17 @@ namespace rummy::clients {
             string userResponse = receiveUserMessage();
             if (userResponse == "Stock") {
                 if (!drawFromStock(gs, 1)) return false;
-                else {
-                    sendUserMessage((boost::format("You just drew %s") % hand.getCards().back()->toString()).str());
-                    hand.sort();
-                    hasDrawn = true;
-                }
+
+                sendUserMessage((boost::format("You just drew %s") % hand.getCards().back()->toString()).str());
+                hand.sort();
+                hasDrawn = true;
             } else if (userResponse == "Discard") {
                 sendUserMessage("How many cards would you like to draw?");
                 string reply = receiveUserMessage();
                 try {
                     if (!drawFromDiscard(gs, atoi(reply.c_str()))) throw out_of_range("To big");
-                    else hasDrawn = true;
+
+                    hasDrawn = true;
                 } catch (const exception&) {
                     sendUserMessage("You didn't provide a valid number");
                     return false;
