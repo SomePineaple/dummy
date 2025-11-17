@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace game {
+namespace rummy {
     struct GameState {
         std::shared_ptr<clients::Player> opponent;
         shared_ptr<clients::Player> player;
@@ -27,7 +27,8 @@ namespace game {
         unique_ptr<GameState> gs;
     public:
         Game();
-        Game(const GameState& gs);
+        explicit Game(const GameState& gs);
+        Game(const shared_ptr<clients::Player>& p1, const shared_ptr<clients::Player>& p2);
         void runRound();
         [[nodiscard]] bool isGameOver() const;
     };

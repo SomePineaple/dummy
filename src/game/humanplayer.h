@@ -7,7 +7,7 @@
 
 #include "player.h"
 
-namespace game::clients {
+namespace rummy::clients {
     class HumanPlayer : public Player {
         std::string name;
         void printGameState(const GameState* gs) const;

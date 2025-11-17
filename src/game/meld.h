@@ -9,7 +9,7 @@
 
 #include "cards.h"
 
-namespace game {
+namespace rummy {
     enum MeldType {
         INVALID, RUN, SET
     };

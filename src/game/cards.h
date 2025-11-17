@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-namespace game {
+namespace rummy {
     enum Suit {
         HEARTS, DIAMONDS, SPADES, CLUBS
     };

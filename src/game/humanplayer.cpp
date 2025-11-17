@@ -9,7 +9,7 @@
 #include <boost/format.hpp>
 #include "game.h"
 
-namespace game::clients {
+namespace rummy::clients {
     bool HumanPlayer::runTurn(GameState* gs) {
         if (gs == nullptr)
             return false;

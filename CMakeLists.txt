@@ -9,8 +9,7 @@ add_subdirectory(deps/boostorg/boost)
 
 #find_package(Boost REQUIRED COMPONENTS process)
 
-add_executable(dummy src/main.cpp
-        src/game/cards.cpp
+add_library(dummy_backend src/game/cards.cpp
         src/game/cards.h
         src/game/meld.cpp
         src/game/meld.h
@@ -19,9 +18,18 @@ add_executable(dummy src/main.cpp
         src/game/game.cpp
         src/game/game.h
         src/game/humanplayer.cpp
-        src/game/humanplayer.h
+        src/game/humanplayer.h)
+
+target_link_libraries(dummy_backend PRIVATE boost_format)
+target_include_directories(dummy_backend PRIVATE deps/boostorg/format/include)
+
+add_executable(signal-client src/signalclient.cpp
         src/signalbot/signalplayer.cpp
         src/signalbot/signalplayer.h)
 
-target_link_libraries(dummy PRIVATE nlohmann_json boost_process boost_asio boost_format)
-target_include_directories(dummy PRIVATE deps/njhomann/json/include deps/boostorg/process/include deps/boostorg/format/include)
+target_link_libraries(signal-client PRIVATE dummy_backend nlohmann_json boost_process boost_asio boost_format)
+target_include_directories(signal-client PRIVATE deps/njhomann/json/include deps/boostorg/process/include deps/boostorg/format/include)
+
+add_executable(console-client src/consoleclient.cpp)
+
+target_link_libraries(console-client PRIVATE dummy_backend)

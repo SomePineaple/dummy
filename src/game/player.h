@@ -8,11 +8,11 @@
 #include "meld.h"
 #include <string>
 
-namespace game {
+namespace rummy {
     struct GameState;
 }
 
-namespace game::clients {
+namespace rummy::clients {
     class Player {
     protected:
         Meld workingMeld;

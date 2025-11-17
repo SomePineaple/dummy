@@ -8,7 +8,7 @@
 
 #include "game.h"
 
-namespace game::clients {
+namespace rummy::clients {
     bool Player::drawFromStock(GameState* gs, const unsigned char numCards) {
         return gs->stockPile.dump(hand, numCards);
     }
@@ -84,9 +84,7 @@ namespace game::clients {
     }
 
     shared_ptr<Player> Player::clone() const {
-        return make_shared<Player>(Player{
-            *this
-        });
+        return make_shared<Player>(*this);
     }
 
     void Player::cleanUp(){}

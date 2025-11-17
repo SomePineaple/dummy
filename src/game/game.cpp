@@ -8,7 +8,7 @@
 #include "player.h"
 #include <memory>
 
-namespace game {
+namespace rummy {
     using namespace clients;
 
     GameState::GameState(const shared_ptr<Player>& o, const shared_ptr<Player>& p) :
@@ -39,6 +39,11 @@ namespace game {
 
         this->gs = make_unique<GameState>(gs);
     }
+
+    Game::Game(const shared_ptr<Player> &p1, const shared_ptr<Player> &p2) {
+
+    }
+
 
     bool Game::isGameOver() const {
         return p1->getHandSize() == 0 || p2->getHandSize() == 0 || gs->stockPile.size() == 0;

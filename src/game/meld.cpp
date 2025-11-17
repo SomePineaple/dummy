@@ -4,7 +4,7 @@
 
 #include "meld.h"
 
-namespace game {
+namespace rummy {
     bool isValidSet(const std::vector<std::shared_ptr<Card>>& cards) {
         if (cards.size() < 3) return false;
 

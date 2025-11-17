@@ -26,7 +26,7 @@ int randomInt() {
     return distrib(gen);
 }
 
-namespace game::clients {
+namespace rummy::clients {
     // TODO: Fix hardcoded signal-cli executable location
     SignalPlayer::SignalPlayer(const std::string& playerNumber, const std::string& botNumber) : phoneNumber(playerNumber) {
         ctx = make_shared<asio::io_context>();

@@ -8,7 +8,7 @@
 #include <random>
 #include <algorithm>
 
-namespace game {
+namespace rummy {
     unsigned char getSortValue(const std::shared_ptr<Card>& card) {
         return static_cast<unsigned char>(card->suit * 13) + card->value;
     }
