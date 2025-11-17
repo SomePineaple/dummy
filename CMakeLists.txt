@@ -17,8 +17,10 @@ add_library(dummy_backend src/game/cards.cpp
         src/game/player.h
         src/game/game.cpp
         src/game/game.h
-        src/game/consoleplayer.cpp
-        src/game/consoleplayer.h)
+        src/game/console_player.cpp
+        src/game/console_player.h
+        src/nn/nn_player.cpp
+        src/nn/nn_player.h)
 
 target_link_libraries(dummy_backend PRIVATE boost_format)
 target_include_directories(dummy_backend PRIVATE deps/boostorg/format/include)
@@ -33,3 +35,5 @@ target_include_directories(signal-client PRIVATE deps/njhomann/json/include deps
 add_executable(console-client src/consoleclient.cpp)
 
 target_link_libraries(console-client PRIVATE dummy_backend)
+
+add_executable(ai-trainer src/aitrainer.cpp)

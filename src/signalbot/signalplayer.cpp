@@ -37,7 +37,7 @@ namespace rummy::clients {
         sendUserMessage("Someone would like to play a game of Rummy with you! (respond [kill] to any prompt to stop the game)");
     }
 
-    bool SignalPlayer::runTurn(GameState* gs) {
+    bool SignalPlayer::run_turn(game_state* gs) {
         if (gs == nullptr)
             return false;
 
@@ -56,7 +56,7 @@ namespace rummy::clients {
                 sendUserMessage("How many cards would you like to draw?");
                 string reply = receiveUserMessage();
                 try {
-                    if (!drawFromDiscard(gs, atoi(reply.c_str()))) throw out_of_range("To big");
+                    if (!draw_from_discard(gs, atoi(reply.c_str()))) throw out_of_range("To big");
 
                     hasDrawn = true;
                 } catch (const exception&) {
@@ -74,7 +74,7 @@ namespace rummy::clients {
             sendUserMessage("Send:\n[Play] to play the meld\n[Add] to add a card to the meld\n[Discard] to discard\n[Reset] to reset your turn (cheater)");
             string userResponse = receiveUserMessage();
             if (userResponse == "Play") {
-                if (!playWorkingMeld(gs))
+                if (!play_working_meld(gs))
                     sendUserMessage("Can't play the working meld, it is no valid.");
             } else if (userResponse == "Add") {
                 askAndAdd();
@@ -95,7 +95,7 @@ namespace rummy::clients {
         return false;
     }
 
-    bool SignalPlayer::askAndDiscard(GameState* gs) {
+    bool SignalPlayer::askAndDiscard(game_state* gs) {
         sendUserMessage("Which card would you like to discard?");
         string userResponse = receiveUserMessage();
         for (int i = 0; i < hand.size(); i++) {
@@ -112,20 +112,20 @@ namespace rummy::clients {
         string userResponse = receiveUserMessage();
         for (int i = 0; i < hand.size(); i++) {
             if (hand.getCard(i)->toString() == userResponse) {
-                if (!addToWorkingMeld(i))
+                if (!add_to_working_meld(i))
                     sendUserMessage("That was not a valid card.");
             }
         }
     }
 
-    void SignalPlayer::sendGameState(const GameState* gs) const {
+    void SignalPlayer::sendGameState(const game_state* gs) const {
         string message;
-        message += (boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->getHandSize())).str();
-        message += gs->opponent->printMelds();
+        message += (boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->hand_size())).str();
+        message += gs->opponent->print_melds();
         message += (boost::format("Discard pile:\n%s\n") % gs->discardPile.toString()).str();
         message += (boost::format("Your hand:\n%s\n") % hand.toString()).str();
         message += (boost::format("Current building a meld:\n%s\n") % workingMeld.toString()).str();
-        message += (boost::format("You have played:\n%s\n") % printMelds()).str();
+        message += (boost::format("You have played:\n%s\n") % print_melds()).str();
 
         sendUserMessage(message);
     }
@@ -189,18 +189,18 @@ namespace rummy::clients {
         }
 
         if (message == "kill") {
-            cleanUp();
+            clean();
             exit(0);
         }
 
         return message;
     }
 
-    std::shared_ptr<Player> SignalPlayer::clone() const {
+    std::shared_ptr<player> SignalPlayer::clone() const {
         return make_shared<SignalPlayer>(*this);
     }
 
-    void SignalPlayer::cleanUp() {
+    void SignalPlayer::clean() {
         sendUserMessage("Stopping server...");
         cout << "Closing signal CLI..." << endl;
         signalCli->request_exit();

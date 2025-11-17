@@ -5,21 +5,19 @@
 #ifndef DUMMY_MELD_H
 #define DUMMY_MELD_H
 
-#include <optional>
-
 #include "cards.h"
 
 namespace rummy {
-    enum MeldType {
+    enum meld_type {
         INVALID, RUN, SET
     };
 
-    class Meld : public Pile {
-        Meld* buildingFrom;
+    class meld : public pile {
+        meld* buildingFrom;
     public:
-        Meld();
-        [[nodiscard]] MeldType getMeldType() const;
-        bool tryBuildFrom(Meld* buildingFrom);
+        meld();
+        [[nodiscard]] meld_type getMeldType() const;
+        bool tryBuildFrom(meld* buildingFrom);
     };
 } // game
 

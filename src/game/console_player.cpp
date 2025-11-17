@@ -2,7 +2,7 @@
 // Created by nj60 on 11/12/25.
 //
 
-#include "consoleplayer.h"
+#include "console_player.h"
 
 #include <iostream>
 #include <string>
@@ -10,12 +10,12 @@
 #include "game.h"
 
 namespace rummy::clients {
-    bool ConsolePlayer::runTurn(GameState* gs) {
+    bool console_player::run_turn(game_state* gs) {
         if (gs == nullptr)
             return false;
 
         bool hasDiscarded = false;
-        printGameState(gs);
+        print_game_state(gs);
         cout << boost::format("You are %s\nType:\n[S] to draw from stock\n[D] to draw from discard\n") % name << endl;
 
         char response;
@@ -31,7 +31,7 @@ namespace rummy::clients {
             case 'D':
                 cout << "How many cards would you like to draw?\n";
                 cin >> response;
-                drawFromDiscard(gs, response - '0');
+                draw_from_discard(gs, response - '0');
                 hand.sort();
                 break;
             default:
@@ -39,24 +39,24 @@ namespace rummy::clients {
         }
 
         do {
-            printGameState(gs);
+            print_game_state(gs);
             cout << "[P] to play a meld\n[A] to add a card to the meld\n[D] to discard\n[Q] to quit" << endl;
             cin >> response;
 
             switch (response) {
                 case 'D':
-                    hasDiscarded = askAndDiscard(gs);
+                    hasDiscarded = ask_and_discard(gs);
                     if (hasDiscarded)
                         response = 'Q';
                     else
                         cout << "Failed to discard\n";
                     break;
                 case 'P':
-                    if (!playWorkingMeld(gs))
+                    if (!play_working_meld(gs))
                         cout << "Cannot play the current meld, it is invalid.\n";
                     break;
                 case 'A':
-                    askAndAdd(gs);
+                    ask_and_add(gs);
                     break;
                 case 'Q':
                     break;
@@ -68,7 +68,7 @@ namespace rummy::clients {
         return hasDiscarded && workingMeld.size() == 0;
     }
 
-    bool ConsolePlayer::askAndDiscard(GameState* gs) {
+    bool console_player::ask_and_discard(game_state* gs) {
         cout << "Which card would you like to discard?" << endl;
         string response;
         cin >> response;
@@ -81,13 +81,13 @@ namespace rummy::clients {
         return false;
     }
 
-    void ConsolePlayer::askAndAdd(GameState *gs) {
+    void console_player::ask_and_add(game_state *gs) {
         cout << "Which card would you like to add?" << endl;
         string response;
         cin >> response;
         for (int i = 0; i < hand.size(); i++) {
             if (hand.getCard(i)->toString() == response) {
-                addToWorkingMeld(i);
+                add_to_working_meld(i);
                 return;
             }
         }
@@ -95,9 +95,9 @@ namespace rummy::clients {
         cout << "that was not a valid card.\n";
     }
 
-    void ConsolePlayer::printGameState(const GameState* gs) const {
-        cout << boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->getHandSize());
-        cout << gs->opponent->printMelds();
+    void console_player::print_game_state(const game_state* gs) const {
+        cout << boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->hand_size());
+        cout << gs->opponent->print_melds();
 
         cout << boost::format("Discard pile:\n%s\n") % gs->discardPile.toString();
         cout << boost::format("Your hand:\n%s\n") % hand.toString();
@@ -111,7 +111,7 @@ namespace rummy::clients {
         cout << endl;
     }
 
-    shared_ptr<Player> ConsolePlayer::clone() const {
-        return make_shared<ConsolePlayer>(*this);
+    shared_ptr<player> console_player::clone() const {
+        return make_shared<console_player>(*this);
     }
 } // game

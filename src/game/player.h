@@ -9,30 +9,30 @@
 #include <string>
 
 namespace rummy {
-    struct GameState;
+    struct game_state;
 }
 
 namespace rummy::clients {
-    class Player {
+    class player {
     protected:
-        Meld workingMeld;
-        Pile hand;
-        std::vector<std::shared_ptr<Meld>> playedMelds;
+        meld workingMeld;
+        pile hand;
+        std::vector<std::shared_ptr<meld>> playedMelds;
 
-        bool drawFromDiscard(GameState* gs, unsigned char numCards);
-        bool playWorkingMeld(GameState* gs);
-        bool discard(GameState* gs, unsigned char cardNumber);
-        bool addToWorkingMeld(unsigned char cardNumber);
+        bool draw_from_discard(game_state* gs, unsigned char numCards);
+        bool play_working_meld(game_state* gs);
+        bool discard(game_state* gs, unsigned char cardNumber);
+        bool add_to_working_meld(unsigned char cardNumber);
     public:
-        virtual ~Player() = default;
+        virtual ~player() = default;
 
-        bool drawFromStock(GameState* gs, unsigned char numCards);
+        bool drawFromStock(game_state* gs, unsigned char numCards);
         unsigned short calcPoints();
-        std::string printMelds() const;
-        [[nodiscard]] unsigned char getHandSize() const;
-        virtual bool runTurn(GameState* gs);
-        [[nodiscard]] virtual std::shared_ptr<Player> clone() const;
-        virtual void cleanUp();
+        [[nodiscard]] std::string print_melds() const;
+        [[nodiscard]] unsigned char hand_size() const;
+        virtual bool run_turn(game_state* gs);
+        [[nodiscard]] virtual std::shared_ptr<player> clone() const;
+        virtual void clean();
     };
 } // game
 

@@ -20,17 +20,17 @@ namespace rummy {
         [[nodiscard]] std::string toString() const;
     };
 
-    class Pile {
+    class pile {
     public:
-        Pile();
-        ~Pile();
+        pile();
+        ~pile();
         void sort();
         void shuffle();
         void addCard(const std::shared_ptr<Card>& card);
-        bool dump(Pile& other, unsigned char numCards);
+        bool dump(pile& other, unsigned char numCards);
         [[nodiscard]] unsigned short calcPoints() const;
         [[nodiscard]] unsigned char size() const;
-        [[nodiscard]] Pile combine(const Pile* pile) const;
+        [[nodiscard]] pile combine(const pile* pile) const;
         [[nodiscard]] std::string toString() const;
         [[nodiscard]] unsigned short getValue() const;
         [[nodiscard]] std::vector<std::shared_ptr<Card>> getCards() const;
@@ -40,7 +40,7 @@ namespace rummy {
         std::vector<std::shared_ptr<Card>> cards;
     };
 
-    Pile getFullDeck();
+    pile getFullDeck();
 }
 
 #endif //DUMMY_CARDS_H

@@ -11,20 +11,20 @@
 #include "../game/player.h"
 
 namespace rummy::clients {
-    class SignalPlayer final : public Player {
+    class SignalPlayer final : public player {
         const std::string phoneNumber;
         void sendUserMessage(const std::string& message) const;
-        void sendGameState(const GameState* gs) const;
+        void sendGameState(const game_state* gs) const;
         void askAndAdd();
-        bool askAndDiscard(GameState* gs);
+        bool askAndDiscard(game_state* gs);
         std::string receiveUserMessage();
         std::shared_ptr<boost::process::popen> signalCli;
         std::shared_ptr<boost::asio::io_context> ctx;
     public:
         explicit SignalPlayer(const std::string& playerNumber, const std::string& botNumber);
-        bool runTurn(GameState *gs) override;
-        [[nodiscard]] std::shared_ptr<Player> clone() const override;
-        void cleanUp() override;
+        bool run_turn(game_state *gs) override;
+        [[nodiscard]] std::shared_ptr<player> clone() const override;
+        void clean() override;
     };
 }
 
