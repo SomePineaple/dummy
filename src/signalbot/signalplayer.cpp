@@ -16,7 +16,8 @@
 
 using json = nlohmann::json;
 namespace asio = boost::asio;
-namespace env = boost::process::environment;
+namespace bp = boost::process;
+namespace env = bp::environment;
 
 int randomInt() {
     std::random_device rd;
@@ -27,11 +28,11 @@ int randomInt() {
 }
 
 namespace rummy::clients {
-    // TODO: Fix hardcoded signal-cli executable location
     SignalPlayer::SignalPlayer(const std::string& playerNumber, const std::string& botNumber) : phoneNumber(playerNumber) {
         ctx = make_shared<asio::io_context>();
 
-        signalCli = shared_ptr<boost::process::popen>(new boost::process::popen(*ctx, env::find_executable("signal-cli"), {"-a", botNumber, "jsonRpc"}));
+        // I don't know why, but make_shared just doesn't work here, it can't find the contrstructo
+        signalCli = shared_ptr<bp::popen>(new bp::popen(*ctx, env::find_executable("signal-cli"), {"-a", botNumber, "jsonRpc"}));
 
         sendUserMessage("Someone would like to play a game of Rummy with you! (respond [kill] to any prompt to stop the game)");
     }
@@ -118,9 +119,9 @@ namespace rummy::clients {
         }
     }
 
-    void SignalPlayer::sendGameState(const GameState* gs) {
+    void SignalPlayer::sendGameState(const GameState* gs) const {
         string message;
-        message += (boost::format("Your opponent has %s cards, and has played:\n") % gs->opponent->getHandSize()).str();
+        message += (boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->getHandSize())).str();
         message += gs->opponent->printMelds();
         message += (boost::format("Discard pile:\n%s\n") % gs->discardPile.toString()).str();
         message += (boost::format("Your hand:\n%s\n") % hand.toString()).str();

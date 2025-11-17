@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "game/game.h"
-#include "game/humanplayer.h"
+#include "game/consoleplayer.h"
 #include "signalbot/signalplayer.h"
 
 void printHelp() {
@@ -21,13 +21,10 @@ int main(const int numArgs, const char** args) {
     std::string playerNumber = args[1];
     std::string botNumber = args[2];
 
-    auto consolePlayer = std::make_shared<rummy::clients::HumanPlayer>("Player 1");
+    auto consolePlayer = std::make_shared<rummy::clients::ConsolePlayer>("Player 1");
     auto signalPlayer = std::make_shared<rummy::clients::SignalPlayer>(playerNumber, botNumber);
-    rummy::GameState startingGs(consolePlayer, signalPlayer);
 
-    consolePlayer->drawFromStock(&startingGs, 13);
-    signalPlayer->drawFromStock(&startingGs, 13);
-    startingGs.stockPile.dump(startingGs.discardPile, 1);
+    rummy::GameState startingGs(consolePlayer, signalPlayer);
 
     auto g = rummy::Game{startingGs};
     while (!g.isGameOver())

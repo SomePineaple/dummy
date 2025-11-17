@@ -2,7 +2,7 @@
 // Created by nj60 on 11/12/25.
 //
 
-#include "humanplayer.h"
+#include "consoleplayer.h"
 
 #include <iostream>
 #include <string>
@@ -10,7 +10,7 @@
 #include "game.h"
 
 namespace rummy::clients {
-    bool HumanPlayer::runTurn(GameState* gs) {
+    bool ConsolePlayer::runTurn(GameState* gs) {
         if (gs == nullptr)
             return false;
 
@@ -68,7 +68,7 @@ namespace rummy::clients {
         return hasDiscarded && workingMeld.size() == 0;
     }
 
-    bool HumanPlayer::askAndDiscard(GameState* gs) {
+    bool ConsolePlayer::askAndDiscard(GameState* gs) {
         cout << "Which card would you like to discard?" << endl;
         string response;
         cin >> response;
@@ -81,7 +81,7 @@ namespace rummy::clients {
         return false;
     }
 
-    void HumanPlayer::askAndAdd(GameState *gs) {
+    void ConsolePlayer::askAndAdd(GameState *gs) {
         cout << "Which card would you like to add?" << endl;
         string response;
         cin >> response;
@@ -95,8 +95,8 @@ namespace rummy::clients {
         cout << "that was not a valid card.\n";
     }
 
-    void HumanPlayer::printGameState(const GameState* gs) const {
-        cout << boost::format("Your opponent has %s cards, and has played:\n") % gs->opponent->getHandSize();
+    void ConsolePlayer::printGameState(const GameState* gs) const {
+        cout << boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->getHandSize());
         cout << gs->opponent->printMelds();
 
         cout << boost::format("Discard pile:\n%s\n") % gs->discardPile.toString();
@@ -111,7 +111,7 @@ namespace rummy::clients {
         cout << endl;
     }
 
-    shared_ptr<Player> HumanPlayer::clone() const {
-        return make_shared<HumanPlayer>(*this);
+    shared_ptr<Player> ConsolePlayer::clone() const {
+        return make_shared<ConsolePlayer>(*this);
     }
 } // game

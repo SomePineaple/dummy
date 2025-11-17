@@ -14,7 +14,7 @@ namespace rummy::clients {
     class SignalPlayer final : public Player {
         const std::string phoneNumber;
         void sendUserMessage(const std::string& message) const;
-        void sendGameState(const GameState* gs);
+        void sendGameState(const GameState* gs) const;
         void askAndAdd();
         bool askAndDiscard(GameState* gs);
         std::string receiveUserMessage();

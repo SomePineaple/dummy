@@ -16,7 +16,7 @@ namespace rummy {
         Pile discardPile;
         vector<shared_ptr<Meld>> melds;
 
-        GameState(const shared_ptr<clients::Player>& o, const shared_ptr<clients::Player>& p);
+        GameState(const shared_ptr<clients::Player>& p, const shared_ptr<clients::Player>& o);
 
         explicit GameState(const GameState* clone);
     };
@@ -26,7 +26,6 @@ namespace rummy {
         shared_ptr<clients::Player> p2;
         unique_ptr<GameState> gs;
     public:
-        Game();
         explicit Game(const GameState& gs);
         Game(const shared_ptr<clients::Player>& p1, const shared_ptr<clients::Player>& p2);
         void runRound();

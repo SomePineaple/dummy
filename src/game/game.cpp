@@ -4,16 +4,18 @@
 
 #include "game.h"
 
-#include "humanplayer.h"
 #include "player.h"
 #include <memory>
 
 namespace rummy {
     using namespace clients;
 
-    GameState::GameState(const shared_ptr<Player>& o, const shared_ptr<Player>& p) :
+    GameState::GameState(const shared_ptr<Player>& p, const shared_ptr<Player>& o) :
             opponent(o), player(p), stockPile(getFullDeck()) {
         stockPile.shuffle();
+        player->drawFromStock(this, 13);
+        opponent->drawFromStock(this, 13);
+        stockPile.dump(discardPile, 1);
     }
 
     GameState::GameState(const GameState* clone):
@@ -23,16 +25,6 @@ namespace rummy {
         discardPile(clone->discardPile),
         melds(clone->melds) {}
 
-    Game::Game() {
-        p1 = make_shared<HumanPlayer>("Player 1");
-        p2 = make_shared<HumanPlayer>("Player 2");
-
-        gs = make_unique<GameState>(p2, p1);
-
-        p1->drawFromStock(gs.get(), 7);
-        p2->drawFromStock(gs.get(), 7);
-    }
-
     Game::Game(const GameState& gs) {
         p1 = gs.player;
         p2 = gs.opponent;
@@ -40,8 +32,10 @@ namespace rummy {
         this->gs = make_unique<GameState>(gs);
     }
 
-    Game::Game(const shared_ptr<Player> &p1, const shared_ptr<Player> &p2) {
-
+    Game::Game(const shared_ptr<Player>& p1, const shared_ptr<Player>& p2) {
+        gs = make_unique<GameState>(p1, p2);
+        this->p1 = p1;
+        this->p2 = p2;
     }
 
 

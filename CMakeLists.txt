@@ -17,8 +17,8 @@ add_library(dummy_backend src/game/cards.cpp
         src/game/player.h
         src/game/game.cpp
         src/game/game.h
-        src/game/humanplayer.cpp
-        src/game/humanplayer.h)
+        src/game/consoleplayer.cpp
+        src/game/consoleplayer.h)
 
 target_link_libraries(dummy_backend PRIVATE boost_format)
 target_include_directories(dummy_backend PRIVATE deps/boostorg/format/include)

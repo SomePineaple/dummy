@@ -8,13 +8,13 @@
 #include "player.h"
 
 namespace rummy::clients {
-    class HumanPlayer : public Player {
+    class ConsolePlayer : public Player {
         std::string name;
         void printGameState(const GameState* gs) const;
         bool askAndDiscard(GameState* gs);
         void askAndAdd(GameState* gs);
     public:
-        explicit HumanPlayer(const std::string&  n) : name(n) {}
+        explicit ConsolePlayer(const std::string&  n) : name(n) {}
 
         bool runTurn(GameState* gs) override;
         [[nodiscard]] std::shared_ptr<Player> clone() const override;
