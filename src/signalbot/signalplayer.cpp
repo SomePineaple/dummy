@@ -145,8 +145,8 @@ namespace rummy::clients {
         asio::write(*signalCli, asio::buffer(req.dump() + '\n'));
 
         // Wait for signal-cli to confirm the message was sent.
-        bool recievedResult = false;
-        while (!recievedResult) {
+        bool receivedResult = false;
+        while (!receivedResult) {
             cout << "awaiting response..." << endl;
             string response;
             asio::read_until(*signalCli, asio::dynamic_buffer(response), "}\n");
@@ -164,7 +164,7 @@ namespace rummy::clients {
                     exit(1);
                 }
 
-                recievedResult = true;
+                receivedResult = true;
                 cout << "got response" << endl;
             } else {
                 cout << boost::format("got response that doesn't make sense: %s") % response << endl;
