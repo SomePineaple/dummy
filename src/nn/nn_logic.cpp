@@ -31,13 +31,13 @@ namespace rummy::nn {
     }
 
     void nn_logic::init_gs(const game_state *gs) {
-        std::array<float, CARD_EMBEDDING_SIZE> padding;
+        std::array<float, CARD_EMBEDDING_SIZE> padding{};
         padding.fill(0);
 
         std::vector<float> net_in;
         // Normalize to -1 -> 1 scale
-        net_in.push_back(gs->stockPile.size() / 12.5 - 1.0);
-        net_in.push_back(2 * gs->opponent->hand_size() / MAX_HAND_SIZE - 1.0);
+        net_in.push_back(static_cast<float>(gs->stockPile.size()) / 12.5f - 1.0f);
+        net_in.push_back(2.0f * static_cast<float>(gs->opponent->hand_size()) / MAX_HAND_SIZE - 1.0f);
 
         // Add discard pile
         for (int i = 0; i < MAX_DISCARD_SIZE; i++) {
@@ -107,6 +107,6 @@ namespace rummy::nn {
 
         // Location of discard output with the highest activation
         const auto largest_location = std::max_element(net_output.begin() + DISCARD_OFFSET, net_output.end());
-        return largest_location - net_output.begin();
+        return largest_location - (net_output.begin() + DISCARD_OFFSET);
     }
 } // rummy::clients

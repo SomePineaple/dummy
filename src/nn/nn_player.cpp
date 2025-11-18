@@ -4,7 +4,6 @@
 
 #include "nn_player.h"
 
-namespace rummy {
-    namespace nn {
-    } // nn
-} // rummy
+namespace rummy::nn {
+
+} // rummy::nn
