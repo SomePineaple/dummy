@@ -20,6 +20,8 @@ add_library(dummy_backend src/game/cards.cpp
         src/game/game.h
         src/game/console_player.cpp
         src/game/console_player.h
+        src/nn/nn_logic.cpp
+        src/nn/nn_logic.h
         src/nn/nn_player.cpp
         src/nn/nn_player.h)
 

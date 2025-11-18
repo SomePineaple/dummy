@@ -6,7 +6,7 @@
 #include <tiny_dnn/tiny_dnn.h>
 
 #include "game/cards.h"
-#include "nn/nn_player.h"
+#include "nn/nn_logic.h"
 
 int main() {
     rummy::card c{rummy::DIAMONDS, 11};
