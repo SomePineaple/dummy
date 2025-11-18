@@ -16,6 +16,7 @@ namespace rummy {
         const suit_type suit;
         const unsigned char value;
 
+        card(const suit_type suit, const unsigned char value) : suit(suit), value(value) {}
         [[nodiscard]] unsigned short get_point_value() const;
         [[nodiscard]] std::string to_string() const;
         [[nodiscard]] std::array<float, 17> one_hot() const;
@@ -41,6 +42,6 @@ namespace rummy {
     };
 
     pile get_full_deck();
-}
+} // rummy
 
 #endif //DUMMY_CARDS_H

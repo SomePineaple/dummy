@@ -12,7 +12,8 @@ int main() {
 
     tiny_dnn::network<tiny_dnn::sequential> net;
 
-    net << tiny_dnn::layers::fc(16, 32) << tiny_dnn::activation::tanh()
+    net << tiny_dnn::input_layer(17) << tiny_dnn::activation::tanh()
+        << tiny_dnn::layers::fc(17, 32) << tiny_dnn::activation::tanh()
         << tiny_dnn::layers::fc(32, 16) << tiny_dnn::activation::tanh();
 
     auto data = c.one_hot();
