@@ -20,7 +20,7 @@ namespace rummy::nn {
 
 
     vec_t nn_logic::get_card_embedding(const card& c) {
-        auto embedding_iterator = embeddings.find(c.get_sort_value());
+        const auto embedding_iterator = embeddings.find(c.get_sort_value());
         if (embedding_iterator == embeddings.end()) {
             auto embedded = embedder.predict(c.one_hot());
             embeddings[c.get_sort_value()] = embedded;
@@ -73,5 +73,40 @@ namespace rummy::nn {
 
         // Finally run network
         net_output = net.predict(net_in);
+    }
+
+    uint8_t nn_logic::get_draw() const {
+        if (net_output.size() != NET_OUTPUT_SIZE) {
+            throw std::runtime_error("Network output has not been initialized");
+        }
+
+        // We take the most probable prediction of the first 26 elements, where 0 is draw from stock, and any other is draw from discard at that index
+        const auto largest_location = std::max_element(net_output.begin(), net_output.begin() + MAX_DISCARD_SIZE + 1);
+        return largest_location - net_output.begin();
+    }
+
+    std::vector<uint8_t> nn_logic::get_play_cards() const {
+        if (net_output.size() != NET_OUTPUT_SIZE) {
+            throw std::runtime_error("Network output has not been initialized");
+        }
+
+        std::vector<uint8_t> play_cards;
+        for (int i = PLAY_OFFSET; i < DISCARD_OFFSET; i++) {
+            if (net_output[i] > PLAY_ACTIVATION_FLOOR)
+                play_cards.push_back(i);
+        }
+
+        return play_cards;
+    }
+
+
+    uint8_t nn_logic::get_discard() const {
+        if (net_output.size() != NET_OUTPUT_SIZE) {
+            throw std::runtime_error("Network output has not been initialized");
+        }
+
+        // Location of discard output with the highest activation
+        const auto largest_location = std::max_element(net_output.begin() + DISCARD_OFFSET, net_output.end());
+        return largest_location - net_output.begin();
     }
 } // rummy::clients

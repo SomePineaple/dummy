@@ -12,8 +12,8 @@ namespace rummy::nn {
     using namespace tiny_dnn;
 
     constexpr uint16_t CARD_EMBEDDING_SIZE = 16;
-    // 0:draw stock, 1-25: Draw discard, 26-46: cards to play, 46-66: card to discard
-    constexpr uint16_t NET_OUTPUT_SIZE = 67;
+    // 0:draw stock, 1-25: Draw discard, 26-46: cards to play, 47-67: card to discard
+    constexpr uint16_t NET_OUTPUT_SIZE = 68;
     constexpr uint16_t MAX_PLAYED_CARDS = 51;
     constexpr uint16_t MAX_DISCARD_SIZE = 25;
     constexpr uint16_t MAX_HAND_SIZE = 26;
@@ -21,6 +21,10 @@ namespace rummy::nn {
     constexpr uint16_t NET_INPUT_SIZE = 1 + 1 + MAX_DISCARD_SIZE*CARD_EMBEDDING_SIZE + MAX_PLAYED_CARDS*CARD_EMBEDDING_SIZE + MAX_HAND_SIZE*CARD_EMBEDDING_SIZE;
 
     class nn_logic {
+        static constexpr uint16_t DISCARD_OFFSET = 47;
+        static constexpr uint16_t PLAY_OFFSET = 26;
+        static constexpr float PLAY_ACTIVATION_FLOOR = 0.7;
+
         network<sequential> embedder;
         network<sequential> net;
         // the key is going to be the sort_value of the cards.
@@ -32,15 +36,13 @@ namespace rummy::nn {
         nn_logic(const network<sequential>& e, const network<sequential>& n);
         void init_gs(const game_state* gs);
         // returns 0 to draw from stock, and anything more is how many to draw from discard.
-        uint8_t get_draw();
-        std::vector<uint8_t> get_play_cards();
-        uint8_t get_discard();
+        uint8_t get_draw() const;
+        std::vector<uint8_t> get_play_cards() const;
+        uint8_t get_discard() const;
     };
 
     class nn_player final : public clients::player {
         nn_logic logic;
-        // We will decrease the score bias every time the network tries to make an illegal move.
-        int16_t score_bias{};
     public:
         nn_player(const network<sequential>& e, const network<sequential>& n) : logic{e, n} {}
     };
