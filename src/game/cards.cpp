@@ -9,12 +9,12 @@
 #include <algorithm>
 
 namespace rummy {
-    unsigned char get_sort_value(const std::shared_ptr<card>& card) {
-        return static_cast<unsigned char>(card->suit * 13) + card->value;
+    uint8_t card::get_sort_value() const {
+        return static_cast<uint8_t>(suit * 13) + value;
     }
 
     bool compare_cards(const std::shared_ptr<card>& c1, const std::shared_ptr<card>& c2) {
-        return get_sort_value(c1) < get_sort_value(c2);
+        return c1->get_sort_value() < c2->get_sort_value();
     }
 
     std::string card::to_string() const {

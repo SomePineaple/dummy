@@ -6,10 +6,40 @@
 #define DUMMY_NNPLAYER_H
 
 #include "../game/player.h"
+#include <tiny_dnn/tiny_dnn.h>
 
 namespace rummy::nn {
-    class nn_player final : public clients::player {
+    using namespace tiny_dnn;
+
+    constexpr uint16_t CARD_EMBEDDING_SIZE = 16;
+    // 0:draw stock, 1-25: Draw discard, 26-46: cards to play, 46-66: card to discard
+    constexpr uint16_t NET_OUTPUT_SIZE = 67;
+    constexpr uint16_t MAX_PLAYED_CARDS = 45;
+    // 0: num cards in stock, 1: num cards in opponents hands, up to 25 cards in discard pile, up to MAX_PLAYED_CARDS played cards per player, and then up to 26 cards in the current players hand
+    constexpr uint16_t NET_INPUT_SIZE = 1 + 1 + 25*CARD_EMBEDDING_SIZE + 2*MAX_PLAYED_CARDS*CARD_EMBEDDING_SIZE + 26*CARD_EMBEDDING_SIZE;
+
+    class nn_logic {
+        network<sequential> embedder;
+        network<sequential> net;
+        // the key is going to be the sort_value of the cards.
+        std::unordered_map<uint8_t, vec_t> embeddings;
+        vec_t net_output;
+
+        vec_t get_card_embedding(const card& c);
+    public:
+        nn_logic(const network<sequential>& e, const network<sequential>& n) : embedder(e), net(n) {}
+        void init_gs(const game_state* gs);
+        // returns 0 to draw from stock, and anything more is how many to draw from discard.
+        uint8_t get_draw();
+        std::vector<uint8_t> get_play_cards();
+        uint8_t get_discard();
     };
-} // rummy::clients
+
+    class nn_player final : public clients::player {
+        nn_logic logic;
+    public:
+        nn_player(const network<sequential>& e, const network<sequential>& n) : logic{e, n} {}
+    };
+} // rummy::nn
 
 #endif //DUMMY_NNPLAYER_H

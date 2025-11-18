@@ -17,7 +17,8 @@ namespace rummy {
         const unsigned char value;
 
         card(const suit_type suit, const unsigned char value) : suit(suit), value(value) {}
-        [[nodiscard]] unsigned short get_point_value() const;
+        [[nodiscard]] uint16_t get_point_value() const;
+        [[nodiscard]] uint8_t get_sort_value() const;
         [[nodiscard]] std::string to_string() const;
         [[nodiscard]] std::array<float, 17> one_hot() const;
     };

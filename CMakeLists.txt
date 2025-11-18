@@ -24,7 +24,7 @@ add_library(dummy_backend src/game/cards.cpp
         src/nn/nn_player.h)
 
 target_link_libraries(dummy_backend PRIVATE boost_format)
-target_include_directories(dummy_backend PRIVATE deps/boostorg/format/include)
+target_include_directories(dummy_backend PRIVATE deps/boostorg/format/include deps/tiny-dnn)
 
 add_executable(signal-client src/signalclient.cpp
         src/signalbot/signalplayer.cpp
