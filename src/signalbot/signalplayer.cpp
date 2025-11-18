@@ -47,7 +47,7 @@ namespace rummy::clients {
             sendUserMessage("Send:\n[Stock] to draw from stock\n[Discard] to draw from discard");
             string userResponse = receiveUserMessage();
             if (userResponse == "Stock") {
-                if (!drawFromStock(gs, 1)) return false;
+                if (!draw_from_stock(gs, 1)) return false;
 
                 sendUserMessage((boost::format("You just drew %s") % hand.get_cards().back()->to_string()).str());
                 hand.sort();

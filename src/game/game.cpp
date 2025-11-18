@@ -12,8 +12,8 @@ namespace rummy {
     game_state::game_state(const shared_ptr<clients::player>& p, const shared_ptr<clients::player>& o) :
             opponent(o), player(p), stockPile(get_full_deck()) {
         stockPile.shuffle();
-        player->drawFromStock(this, 13);
-        opponent->drawFromStock(this, 13);
+        player->draw_from_stock(this, 13);
+        opponent->draw_from_stock(this, 13);
         stockPile.dump(discardPile, 1);
     }
 
@@ -40,7 +40,7 @@ namespace rummy {
 
     game_winner game::get_winner() const {
         if (p1->hand_size() == 0 || p2->hand_size() == 0 || gs->stockPile.size() == 0) {
-            return p1->calcPoints() > p2->calcPoints() ? PLAYER_ONE : PLAYER_TWO;
+            return p1->calc_points() > p2->calc_points() ? PLAYER_ONE : PLAYER_TWO;
         }
 
         return NOT_OVER;

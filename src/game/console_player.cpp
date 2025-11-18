@@ -23,7 +23,7 @@ namespace rummy::clients {
         switch (response) {
             case 's':
             case 'S':
-                if (!drawFromStock(gs, 1)) return false;
+                if (!draw_from_stock(gs, 1)) return false;
                 cout << "You drew: " << hand.get_card(hand.size() - 1)->to_string() << endl;
                 hand.sort();
                 break;

@@ -9,7 +9,7 @@
 #include "game.h"
 
 namespace rummy::clients {
-    bool player::drawFromStock(game_state* gs, const unsigned char numCards) {
+    bool player::draw_from_stock(game_state* gs, const unsigned char numCards) {
         return gs->stockPile.dump(hand, numCards);
     }
 
@@ -56,9 +56,9 @@ namespace rummy::clients {
     }
 
 
-    unsigned short player::calcPoints() {
-        unsigned char sum = std::accumulate(playedMelds.begin(),playedMelds.end(), 0u, [](const auto& s, const auto& m) {
-            return s + m->calc_points();
+    int player::calc_points() const {
+        int sum = std::accumulate(playedMelds.begin(),playedMelds.end(), 0, [](const auto& partial_sum, const auto& meld) {
+            return partial_sum + meld->calc_points();
         });
 
         sum -= hand.calc_points();
@@ -79,6 +79,10 @@ namespace rummy::clients {
         return hand.size();
     }
 
+    std::shared_ptr<card> player::get_card(const uint8_t index) const {
+        return hand.get_card(index);
+    }
+
     bool player::run_turn(game_state* gs) {
         return false;
     }
@@ -87,5 +91,5 @@ namespace rummy::clients {
         return make_shared<player>(*this);
     }
 
-    void player::clean(){}
+    void player::clean() {}
 } // game
