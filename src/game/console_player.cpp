@@ -24,7 +24,7 @@ namespace rummy::clients {
             case 's':
             case 'S':
                 if (!drawFromStock(gs, 1)) return false;
-                cout << "You drew: " << hand.getCard(hand.size() - 1)->toString() << endl;
+                cout << "You drew: " << hand.get_card(hand.size() - 1)->to_string() << endl;
                 hand.sort();
                 break;
             case 'd':
@@ -74,7 +74,7 @@ namespace rummy::clients {
         cin >> response;
 
         for (int i = 0; i < hand.size(); i++) {
-            if (hand.getCard(i)->toString() == response)
+            if (hand.get_card(i)->to_string() == response)
                 return discard(gs, i);
         }
 
@@ -86,7 +86,7 @@ namespace rummy::clients {
         string response;
         cin >> response;
         for (int i = 0; i < hand.size(); i++) {
-            if (hand.getCard(i)->toString() == response) {
+            if (hand.get_card(i)->to_string() == response) {
                 add_to_working_meld(i);
                 return;
             }
@@ -99,13 +99,13 @@ namespace rummy::clients {
         cout << boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->hand_size());
         cout << gs->opponent->print_melds();
 
-        cout << boost::format("Discard pile:\n%s\n") % gs->discardPile.toString();
-        cout << boost::format("Your hand:\n%s\n") % hand.toString();
-        cout << boost::format("Current building a meld:\n%s\n") % workingMeld.toString();
+        cout << boost::format("Discard pile:\n%s\n") % gs->discardPile.to_string();
+        cout << boost::format("Your hand:\n%s\n") % hand.to_string();
+        cout << boost::format("Current building a meld:\n%s\n") % workingMeld.to_string();
         cout << "You have played:\n";
 
         for (auto& m : playedMelds) {
-            cout << m->toString() << ", ";
+            cout << m->to_string() << ", ";
         }
 
         cout << endl;

@@ -7,7 +7,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(deps/njhomann/json)
 add_subdirectory(deps/boostorg/boost)
 
-#find_package(Boost REQUIRED COMPONENTS process)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+add_subdirectory(deps/tiny-dnn)
 
 add_library(dummy_backend src/game/cards.cpp
         src/game/cards.h
@@ -37,3 +38,5 @@ add_executable(console-client src/consoleclient.cpp)
 target_link_libraries(console-client PRIVATE dummy_backend)
 
 add_executable(ai-trainer src/aitrainer.cpp)
+target_include_directories(ai-trainer PRIVATE deps/tiny-dnn)
+target_link_libraries(ai-trainer PRIVATE dummy_backend)

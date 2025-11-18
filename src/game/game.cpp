@@ -10,7 +10,7 @@
 namespace rummy {
 
     game_state::game_state(const shared_ptr<clients::player>& p, const shared_ptr<clients::player>& o) :
-            opponent(o), player(p), stockPile(getFullDeck()) {
+            opponent(o), player(p), stockPile(get_full_deck()) {
         stockPile.shuffle();
         player->drawFromStock(this, 13);
         opponent->drawFromStock(this, 13);

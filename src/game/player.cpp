@@ -39,8 +39,8 @@ namespace rummy::clients {
     bool player::discard(game_state* gs, const unsigned char cardNumber) {
         if (cardNumber >= hand.size())
             return false;
-        gs->discardPile.addCard(hand.getCard(cardNumber));
-        hand.removeCard(cardNumber);
+        gs->discardPile.add_card(hand.get_card(cardNumber));
+        hand.remove_card(cardNumber);
 
         return true;
     }
@@ -49,8 +49,8 @@ namespace rummy::clients {
         if (cardNumber >= hand.size())
             return false;
 
-        workingMeld.addCard(hand.getCard(cardNumber));
-        hand.removeCard(cardNumber);
+        workingMeld.add_card(hand.get_card(cardNumber));
+        hand.remove_card(cardNumber);
 
         return true;
     }
@@ -58,10 +58,10 @@ namespace rummy::clients {
 
     unsigned short player::calcPoints() {
         unsigned char sum = std::accumulate(playedMelds.begin(),playedMelds.end(), 0u, [](const auto& s, const auto& m) {
-            return s + m->calcPoints();
+            return s + m->calc_points();
         });
 
-        sum -= hand.calcPoints();
+        sum -= hand.calc_points();
 
         return sum;
     }
@@ -69,7 +69,7 @@ namespace rummy::clients {
     std::string player::print_melds() const {
         std::string meldsStr;
         for (const auto& m : playedMelds) {
-            meldsStr += m->toString() + '\n';
+            meldsStr += m->to_string() + '\n';
         }
 
         return meldsStr;

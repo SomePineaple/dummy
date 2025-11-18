@@ -49,7 +49,7 @@ namespace rummy::clients {
             if (userResponse == "Stock") {
                 if (!drawFromStock(gs, 1)) return false;
 
-                sendUserMessage((boost::format("You just drew %s") % hand.getCards().back()->toString()).str());
+                sendUserMessage((boost::format("You just drew %s") % hand.get_cards().back()->to_string()).str());
                 hand.sort();
                 hasDrawn = true;
             } else if (userResponse == "Discard") {
@@ -99,7 +99,7 @@ namespace rummy::clients {
         sendUserMessage("Which card would you like to discard?");
         string userResponse = receiveUserMessage();
         for (int i = 0; i < hand.size(); i++) {
-            if (hand.getCard(i)->toString() == userResponse) {
+            if (hand.get_card(i)->to_string() == userResponse) {
                 return discard(gs, i);
             }
         }
@@ -111,7 +111,7 @@ namespace rummy::clients {
         sendUserMessage("Which card would you like to add?");
         string userResponse = receiveUserMessage();
         for (int i = 0; i < hand.size(); i++) {
-            if (hand.getCard(i)->toString() == userResponse) {
+            if (hand.get_card(i)->to_string() == userResponse) {
                 if (!add_to_working_meld(i))
                     sendUserMessage("That was not a valid card.");
             }
@@ -122,9 +122,9 @@ namespace rummy::clients {
         string message;
         message += (boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->hand_size())).str();
         message += gs->opponent->print_melds();
-        message += (boost::format("Discard pile:\n%s\n") % gs->discardPile.toString()).str();
-        message += (boost::format("Your hand:\n%s\n") % hand.toString()).str();
-        message += (boost::format("Current building a meld:\n%s\n") % workingMeld.toString()).str();
+        message += (boost::format("Discard pile:\n%s\n") % gs->discardPile.to_string()).str();
+        message += (boost::format("Your hand:\n%s\n") % hand.to_string()).str();
+        message += (boost::format("Current building a meld:\n%s\n") % workingMeld.to_string()).str();
         message += (boost::format("You have played:\n%s\n") % print_melds()).str();
 
         sendUserMessage(message);
