@@ -12,21 +12,20 @@ void printHelp() {
     std::cout << "2: <botNUmber> - the phone number of the account registered with signal-cli" << endl;
 }
 
+using namespace std;
+namespace rc = rummy::clients;
 int main(const int numArgs, const char** args) {
     if (numArgs != 3) {
         printHelp();
         return 1;
     }
 
-    std::string playerNumber = args[1];
-    std::string botNumber = args[2];
+    string playerNumber = args[1];
+    string botNumber = args[2];
 
-    auto consolePlayer = std::make_shared<rummy::clients::ConsolePlayer>("Player 1");
-    auto signalPlayer = std::make_shared<rummy::clients::SignalPlayer>(playerNumber, botNumber);
-
-    auto g = rummy::Game{signalPlayer, consolePlayer};
-    while (!g.is_game_over())
-        g.run_round();
+    auto game = rummy::Game{make_shared<rc::SignalPlayer>(playerNumber, botNumber), make_shared<rc::ConsolePlayer>("Player 1")};
+    while (game.is_game_over() == rummy::NOT_OVER)
+        game.run_round();
 
     return 0;
 }
