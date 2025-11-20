@@ -6,7 +6,6 @@
 
 #include "../game/game.h"
 
-
 namespace rummy::nn {
     nn_logic::nn_logic(const network<sequential>& e, const network<sequential>& n) : embedder(e), net(n) {
         if (embedder.in_data_size() != 17 || embedder.out_data_size() != CARD_EMBEDDING_SIZE) {
@@ -17,7 +16,6 @@ namespace rummy::nn {
             throw std::runtime_error("Wrong main network dimensions");
         }
     }
-
 
     vec_t nn_logic::get_card_embedding(const card& c) {
         const auto embedding_iterator = embeddings.find(c.get_sort_value());
@@ -52,7 +50,7 @@ namespace rummy::nn {
         // Add cards on the table
         for (int i = 0; i < MAX_PLAYED_CARDS; i++) {
             if (i < gs->melds.size()) {
-                for (auto card : gs->melds[i]->get_cards()) {
+                for (const auto& card : gs->melds[i]->get_cards()) {
                     vec_t embed_vec = get_card_embedding(*card);
                     net_in.insert(net_in.end(), embed_vec.begin(), embed_vec.end());
                 }
@@ -90,15 +88,22 @@ namespace rummy::nn {
             throw std::runtime_error("Network output has not been initialized");
         }
 
-        std::vector<uint8_t> play_cards;
+        std::vector<std::tuple<float, uint8_t>> card_outputs;
         for (int i = PLAY_OFFSET; i < DISCARD_OFFSET; i++) {
             if (net_output[i] > PLAY_ACTIVATION_FLOOR)
-                play_cards.push_back(i);
+                card_outputs.emplace_back(net_output[i], i - PLAY_OFFSET);
+        }
+        std::partial_sort(card_outputs.begin(), card_outputs.begin() + 3, card_outputs.end(), [](const auto& a, const auto& b) {
+            return get<0>(a) > get<0>(b);
+        });
+
+        std::vector<uint8_t> play_cards;
+        for (int i = 0; i < min(card_outputs.size(), static_cast<size_t>(3)); i++) {
+            play_cards.push_back(get<1>(card_outputs[i]));
         }
 
         return play_cards;
     }
-
 
     uint8_t nn_logic::get_discard() const {
         if (net_output.size() != NET_OUTPUT_SIZE) {

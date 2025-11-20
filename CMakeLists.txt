@@ -8,6 +8,7 @@ add_subdirectory(deps/njhomann/json)
 add_subdirectory(deps/boostorg/boost)
 
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+set(USE_IMAGE_API OFF)
 add_subdirectory(deps/tiny-dnn)
 
 add_library(dummy_backend src/game/cards.cpp
