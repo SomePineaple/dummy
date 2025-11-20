@@ -4,7 +4,7 @@
 
 #include "game/game.h"
 #include "game/console_player.h"
-#include "signalbot/signalplayer.h"
+#include "signalbot/signal_player.h"
 
 void printHelp() {
     std::cout << "This program requires a working installation of signal-cli in your path, and takes two arguments\n";
@@ -21,8 +21,8 @@ int main(const int numArgs, const char** args) {
     std::string playerNumber = args[1];
     std::string botNumber = args[2];
 
-    auto g = rummy::game{std::make_shared<rummy::clients::console_player>("Player 1"), std::make_shared<rummy::clients::SignalPlayer>(playerNumber, botNumber)};
-    while (g.get_winner() != rummy::NOT_OVER)
+    auto g = rummy::game{std::make_shared<rummy::clients::console_player>("Player 1"), std::make_shared<rummy::clients::signal_player>(playerNumber, botNumber)};
+    while (g.get_winner() == rummy::NOT_OVER)
         g.run_round();
 
     return 0;

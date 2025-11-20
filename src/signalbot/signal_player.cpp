@@ -2,7 +2,7 @@
 // Created by somepineaple on 11/12/25.
 //
 
-#include "signalplayer.h"
+#include "signal_player.h"
 
 #include "nlohmann/json.hpp"
 #include <boost/process/v2/environment.hpp>
@@ -19,7 +19,7 @@ namespace asio = boost::asio;
 namespace bp = boost::process;
 namespace env = bp::environment;
 
-int randomInt() {
+int rand_int() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(1, 10000);
@@ -28,76 +28,74 @@ int randomInt() {
 }
 
 namespace rummy::clients {
-    SignalPlayer::SignalPlayer(const std::string& playerNumber, const std::string& botNumber) : phoneNumber(playerNumber) {
+    signal_player::signal_player(const std::string& playerNumber, const std::string& botNumber) : phoneNumber(playerNumber) {
         ctx = make_shared<asio::io_context>();
 
         // I don't know why, but make_shared just doesn't work here, it can't find the contrstructor
         signalCli = shared_ptr<bp::popen>(new bp::popen(*ctx, env::find_executable("signal-cli"), {"-a", botNumber, "jsonRpc"}));
 
-        sendUserMessage("Someone would like to play a game of Rummy with you! (respond [kill] to any prompt to stop the game)");
+        send_user_message("Someone would like to play a game of Rummy with you! (respond [kill] to any prompt to stop the game)");
     }
 
-    bool SignalPlayer::run_turn(game_state* gs) {
+    bool signal_player::run_turn(game_state* gs) {
         if (gs == nullptr)
             return false;
 
-        bool hasDrawn = false;
+        bool drawn = false;
         do {
-            sendGameState(gs);
-            sendUserMessage("Send:\n[Stock] to draw from stock\n[Discard] to draw from discard");
-            string userResponse = receiveUserMessage();
-            if (userResponse == "Stock") {
+            send_game_state(gs);
+            send_user_message("Send:\n[Stock] to draw from stock\n[Discard] to draw from discard");
+            if (string response = receive_user_message(); response == "Stock") {
                 if (!draw_from_stock(gs, 1)) return false;
 
-                sendUserMessage((boost::format("You just drew %s") % hand.get_cards().back()->to_string()).str());
+                send_user_message((boost::format("You just drew %s") % hand.get_cards().back()->to_string()).str());
                 hand.sort();
-                hasDrawn = true;
-            } else if (userResponse == "Discard") {
-                sendUserMessage("How many cards would you like to draw?");
-                string reply = receiveUserMessage();
+                drawn = true;
+            } else if (response == "Discard") {
+                send_user_message("How many cards would you like to draw?");
+                string reply = receive_user_message();
                 try {
                     if (!draw_from_discard(gs, atoi(reply.c_str()))) throw out_of_range("To big");
-
-                    hasDrawn = true;
+                    hand.sort();
+                    drawn = true;
                 } catch (const exception&) {
-                    sendUserMessage("You didn't provide a valid number");
+                    send_user_message("You didn't provide a valid number");
                     return false;
                 }
             } else {
-                sendUserMessage("That was not a valid response");
+                send_user_message("That was not a valid response");
             }
-        } while (!hasDrawn);
+        } while (!drawn);
 
         bool loop = true;
         do {
-            sendGameState(gs);
-            sendUserMessage("Send:\n[Play] to play the meld\n[Add] to add a card to the meld\n[Discard] to discard\n[Reset] to reset your turn (cheater)");
-            string userResponse = receiveUserMessage();
-            if (userResponse == "Play") {
+            send_game_state(gs);
+            send_user_message("Send:\n[Play] to play the meld\n[Add] to add a card to the meld\n[Discard] to discard\n[Reset] to reset your turn (cheater)");
+            if (string response = receive_user_message();response == "Play") {
                 if (!play_working_meld(gs))
-                    sendUserMessage("Can't play the working meld, it is no valid.");
-            } else if (userResponse == "Add") {
-                askAndAdd();
-            } else if (userResponse == "Discard") {
+                    send_user_message("Can't play the working meld, it is no valid.");
+            } else if (response == "Add") {
+                ask_and_add();
+            } else if (response == "Discard") {
                 if (workingMeld.size() != 0)
-                    sendUserMessage("You cannot discard yet, you are building a meld to play!");
-                else if (askAndDiscard(gs)) {
-                    sendUserMessage("Your opponent is playing...");
+                    send_user_message("You cannot discard yet, you are building a meld to play!");
+                else if (ask_and_discard(gs)) {
+                    send_user_message("Your opponent is playing...");
                     return true;
                 }
-            } else if (userResponse == "Reset") {
+            } else if (response == "Reset") {
                 loop = false;
             } else {
-                sendUserMessage("That was not a valid response. Try again");
+                send_user_message("That was not a valid response. Try again");
             }
         } while (loop);
 
         return false;
     }
 
-    bool SignalPlayer::askAndDiscard(game_state* gs) {
-        sendUserMessage("Which card would you like to discard?");
-        string userResponse = receiveUserMessage();
+    bool signal_player::ask_and_discard(game_state* gs) {
+        send_user_message("Which card would you like to discard?");
+        string userResponse = receive_user_message();
         for (int i = 0; i < hand.size(); i++) {
             if (hand.get_card(i)->to_string() == userResponse) {
                 return discard(gs, i);
@@ -107,18 +105,18 @@ namespace rummy::clients {
         return false;
     }
 
-    void SignalPlayer::askAndAdd() {
-        sendUserMessage("Which card would you like to add?");
-        string userResponse = receiveUserMessage();
+    void signal_player::ask_and_add() {
+        send_user_message("Which card would you like to add?");
+        string userResponse = receive_user_message();
         for (int i = 0; i < hand.size(); i++) {
             if (hand.get_card(i)->to_string() == userResponse) {
                 if (!add_to_working_meld(i))
-                    sendUserMessage("That was not a valid card.");
+                    send_user_message("That was not a valid card.");
             }
         }
     }
 
-    void SignalPlayer::sendGameState(const game_state* gs) const {
+    void signal_player::send_game_state(const game_state* gs) const {
         string message;
         message += (boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->hand_size())).str();
         message += gs->opponent->print_melds();
@@ -127,16 +125,16 @@ namespace rummy::clients {
         message += (boost::format("Current building a meld:\n%s\n") % workingMeld.to_string()).str();
         message += (boost::format("You have played:\n%s\n") % print_melds()).str();
 
-        sendUserMessage(message);
+        send_user_message(message);
     }
 
-    void SignalPlayer::sendUserMessage(const string& message) const {
-        int messageId = randomInt();
+    void signal_player::send_user_message(const string& message) const {
+        int id = rand_int();
         json req = {
             {"jsonrpc", "2.0"},
             {"method", "send"},
             {"params", {{"message", message}, {"recipient", phoneNumber}, {"expiresInSeconds", 3600}}},
-            {"id", messageId}
+            {"id", id}
         };
 
         cout << "Sending message..." << endl;
@@ -156,7 +154,7 @@ namespace rummy::clients {
                 cout << boost::format("Failed to parse response. Err: %s\n Response: %s") % e.what() % response << endl;
                 continue;
             }
-            if (res.contains("id") && res["id"] == messageId && res.contains("result")) {
+            if (res.contains("id") && res["id"] == id && res.contains("result")) {
                 auto result = res["result"]["results"][0]["type"];
                 if (result != "SUCCESS") {
                     cout << boost::format("Failed to send message to user: got response %s") % response << endl;
@@ -172,7 +170,7 @@ namespace rummy::clients {
     }
 
     // Waits for the user to send a proper dataMessage and returns it
-    std::string SignalPlayer::receiveUserMessage() {
+    std::string signal_player::receive_user_message() {
         bool receivedMessage = false;
         string message;
         while (!receivedMessage) {
@@ -196,12 +194,12 @@ namespace rummy::clients {
         return message;
     }
 
-    std::shared_ptr<player> SignalPlayer::clone() const {
-        return make_shared<SignalPlayer>(*this);
+    std::shared_ptr<player> signal_player::clone() const {
+        return make_shared<signal_player>(*this);
     }
 
-    void SignalPlayer::clean() {
-        sendUserMessage("Stopping server...");
+    void signal_player::clean() {
+        send_user_message("Stopping server...");
         cout << "Closing signal CLI..." << endl;
         signalCli->request_exit();
         ctx->stop();

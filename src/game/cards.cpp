@@ -7,6 +7,7 @@
 #include <memory>
 #include <random>
 #include <algorithm>
+#include <array>
 
 namespace rummy {
     uint8_t card::get_sort_value() const {

@@ -6,6 +6,7 @@
 #define DUMMY_CARDS_H
 #include <memory>
 #include <vector>
+#include <cstdint>
 
 namespace rummy {
     enum suit_type {

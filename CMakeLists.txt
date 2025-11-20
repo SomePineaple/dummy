@@ -29,8 +29,8 @@ target_link_libraries(dummy_backend PRIVATE boost_format)
 target_include_directories(dummy_backend PRIVATE deps/boostorg/format/include deps/tiny-dnn)
 
 add_executable(signal-client src/signalclient.cpp
-        src/signalbot/signalplayer.cpp
-        src/signalbot/signalplayer.h)
+        src/signalbot/signal_player.cpp
+        src/signalbot/signal_player.h)
 
 target_link_libraries(signal-client PRIVATE dummy_backend nlohmann_json boost_process boost_asio boost_format)
 target_include_directories(signal-client PRIVATE deps/njhomann/json/include deps/boostorg/process/include deps/boostorg/format/include)
