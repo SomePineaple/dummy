@@ -9,27 +9,27 @@
 #include "game.h"
 
 namespace rummy::clients {
-    bool Player::drawFromStock(GameState* gs, const unsigned char numCards) {
-        return gs->stockPile.dump(hand, numCards);
+    bool Player::draw_from_stock(GameState* gs, const unsigned char numCards) {
+        return gs->stockPile.dump(m_hand, numCards);
     }
 
-    bool Player::drawFromDiscard(GameState* gs, const unsigned char numCards) {
-        if (gs->discardPile.dump(hand, numCards)) {
+    bool Player::draw_from_discard(GameState* gs, const unsigned char numCards) {
+        if (gs->discardPile.dump(m_hand, numCards)) {
             if (numCards != 1)
-                hand.dump(workingMeld, 1);
+                m_hand.dump(m_WorkingMeld, 1);
         }
         return false;
     }
 
-    bool Player::playWorkingMeld(GameState* gs) {
-        if (workingMeld.size() < 3) {
+    bool Player::play_working_meld(GameState* gs) {
+        if (m_WorkingMeld.size() < 3) {
             for (const auto& m : gs->melds) {
-                if (workingMeld.tryBuildFrom(m.get())) return true;
+                if (m_WorkingMeld.try_build_from(m.get())) return true;
             }
-        } else if (workingMeld.getMeldType() != INVALID) {
-            playedMelds.push_back(std::make_shared<Meld>(workingMeld));
-            gs->melds.push_back(playedMelds.back());
-            workingMeld = Meld{};
+        } else if (m_WorkingMeld.get_meld_type() != INVALID) {
+            m_PlayedMelds.push_back(std::make_shared<Meld>(m_WorkingMeld));
+            gs->melds.push_back(m_PlayedMelds.back());
+            m_WorkingMeld = Meld{};
             return true;
         }
 
@@ -37,49 +37,49 @@ namespace rummy::clients {
     }
 
     bool Player::discard(GameState* gs, const unsigned char cardNumber) {
-        if (cardNumber >= hand.size())
+        if (cardNumber >= m_hand.size())
             return false;
-        gs->discardPile.addCard(hand.getCard(cardNumber));
-        hand.removeCard(cardNumber);
+        gs->discardPile.add_card(m_hand.get_card(cardNumber));
+        m_hand.remove_at(cardNumber);
 
         return true;
     }
 
-    bool Player::addToWorkingMeld(const unsigned char cardNumber) {
-        if (cardNumber >= hand.size())
+    bool Player::add_to_working_meld(const unsigned char cardNumber) {
+        if (cardNumber >= m_hand.size())
             return false;
 
-        workingMeld.addCard(hand.getCard(cardNumber));
-        hand.removeCard(cardNumber);
+        m_WorkingMeld.add_card(m_hand.get_card(cardNumber));
+        m_hand.remove_at(cardNumber);
 
         return true;
     }
 
 
-    unsigned short Player::calcPoints() {
-        unsigned char sum = std::accumulate(playedMelds.begin(),playedMelds.end(), 0u, [](const auto& s, const auto& m) {
-            return s + m->calcPoints();
+    unsigned short Player::calc_points() {
+        unsigned char sum = std::accumulate(m_PlayedMelds.begin(),m_PlayedMelds.end(), 0u, [](const auto& s, const auto& m) {
+            return s + m->calc_points();
         });
 
-        sum -= hand.calcPoints();
+        sum -= m_hand.calc_points();
 
         return sum;
     }
 
-    std::string Player::printMelds() const {
+    std::string Player::print_melds() const {
         std::string meldsStr;
-        for (const auto& m : playedMelds) {
-            meldsStr += m->toString() + '\n';
+        for (const auto& m : m_PlayedMelds) {
+            meldsStr += m->to_string() + '\n';
         }
 
         return meldsStr;
     }
 
-    unsigned char Player::getHandSize() const {
-        return hand.size();
+    unsigned char Player::get_hand_size() const {
+        return m_hand.size();
     }
 
-    bool Player::runTurn(GameState* gs) {
+    bool Player::run_turn(GameState* gs) {
         return false;
     }
 
@@ -87,5 +87,5 @@ namespace rummy::clients {
         return make_shared<Player>(*this);
     }
 
-    void Player::cleanUp(){}
+    void Player::close(){}
 } // game

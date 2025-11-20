@@ -15,24 +15,24 @@ namespace rummy {
 namespace rummy::clients {
     class Player {
     protected:
-        Meld workingMeld;
-        Pile hand;
-        std::vector<std::shared_ptr<Meld>> playedMelds;
+        Meld m_WorkingMeld;
+        Pile m_hand;
+        std::vector<std::shared_ptr<Meld>> m_PlayedMelds;
 
-        bool drawFromDiscard(GameState* gs, unsigned char numCards);
-        bool playWorkingMeld(GameState* gs);
+        bool draw_from_discard(GameState* gs, unsigned char numCards);
+        bool play_working_meld(GameState* gs);
         bool discard(GameState* gs, unsigned char cardNumber);
-        bool addToWorkingMeld(unsigned char cardNumber);
+        bool add_to_working_meld(unsigned char cardNumber);
     public:
         virtual ~Player() = default;
 
-        bool drawFromStock(GameState* gs, unsigned char numCards);
-        unsigned short calcPoints();
-        std::string printMelds() const;
-        [[nodiscard]] unsigned char getHandSize() const;
-        virtual bool runTurn(GameState* gs);
+        bool draw_from_stock(GameState* gs, unsigned char numCards);
+        unsigned short calc_points();
+        [[nodiscard]] std::string print_melds() const;
+        [[nodiscard]] unsigned char get_hand_size() const;
+        virtual bool run_turn(GameState* gs);
         [[nodiscard]] virtual std::shared_ptr<Player> clone() const;
-        virtual void cleanUp();
+        virtual void close();
     };
 } // game
 

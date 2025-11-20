@@ -5,7 +5,7 @@
 #include "meld.h"
 
 namespace rummy {
-    bool isValidSet(const std::vector<std::shared_ptr<Card>>& cards) {
+    bool is_valid_set(const std::vector<std::shared_ptr<Card>>& cards) {
         if (cards.size() < 3) return false;
 
         const auto number = cards[0]->value;
@@ -16,7 +16,7 @@ namespace rummy {
         return true;
     }
 
-    bool isValidRun(const std::vector<std::shared_ptr<Card>>& cards) {
+    bool is_valid_run(const std::vector<std::shared_ptr<Card>>& cards) {
         if (cards.size() < 3) return false;
 
         const auto suit = cards[0]->suit;
@@ -30,28 +30,28 @@ namespace rummy {
     }
 
     Meld::Meld() {
-        this->buildingFrom = nullptr;
+        this->m_BuildingFrom = nullptr;
     }
 
-    MeldType Meld::getMeldType() const {
-        auto c = cards;
-        if (buildingFrom != nullptr) {
-            c = combine(buildingFrom).getCards();
+    MeldType Meld::get_meld_type() const {
+        auto c = m_cards;
+        if (m_BuildingFrom != nullptr) {
+            c = combine(m_BuildingFrom).get_cards();
         }
 
-        if (isValidSet(c))
+        if (is_valid_set(c))
             return SET;
-        if (isValidRun(c))
+        if (is_valid_run(c))
             return RUN;
 
         return INVALID;
     }
 
-    bool Meld::tryBuildFrom(Meld* buildingFrom) {
-        this->buildingFrom = buildingFrom;
-        if (getMeldType() != INVALID)
+    bool Meld::try_build_from(Meld* other) {
+        this->m_BuildingFrom = other;
+        if (get_meld_type() != INVALID)
             return true;
-        this->buildingFrom = nullptr;
+        this->m_BuildingFrom = nullptr;
         return false;
     }
 } // game

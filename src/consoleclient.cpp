@@ -14,8 +14,8 @@ int main() {
     //GameState startingGs(p1, p2);
 
     Game game(p1, p2);
-    while (!game.isGameOver())
-        game.runRound();
+    while (!game.is_game_over())
+        game.run_round();
 
     return 0;
 }

@@ -25,8 +25,8 @@ int main(const int numArgs, const char** args) {
     auto signalPlayer = std::make_shared<rummy::clients::SignalPlayer>(playerNumber, botNumber);
 
     auto g = rummy::Game{signalPlayer, consolePlayer};
-    while (!g.isGameOver())
-        g.runRound();
+    while (!g.is_game_over())
+        g.run_round();
 
     return 0;
 }

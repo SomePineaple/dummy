@@ -17,7 +17,7 @@ namespace rummy {
         return getSortValue(c1) < getSortValue(c2);
     }
 
-    std::string Card::toString() const {
+    std::string Card::to_string() const {
         std::string str;
 
         switch (value) {
@@ -56,7 +56,7 @@ namespace rummy {
         return str;
     }
 
-    unsigned short Card::getPointValue() const {
+    unsigned short Card::get_point_value() const {
         switch (value) {
             case 1:
                 return 15;
@@ -70,36 +70,36 @@ namespace rummy {
     }
 
 
-    Pile getFullDeck() {
+    Pile get_full_deck() {
         Pile p{};
 
         for (unsigned char i = 1; i <= 13; i++) {
-            p.addCard(std::make_shared<Card>(Card{SPADES, i}));
-            p.addCard(std::make_shared<Card>(Card{HEARTS, i}));
-            p.addCard(std::make_shared<Card>(Card{CLUBS, i}));
-            p.addCard(std::make_shared<Card>(Card{DIAMONDS, i}));
+            p.add_card(std::make_shared<Card>(Card{SPADES, i}));
+            p.add_card(std::make_shared<Card>(Card{HEARTS, i}));
+            p.add_card(std::make_shared<Card>(Card{CLUBS, i}));
+            p.add_card(std::make_shared<Card>(Card{DIAMONDS, i}));
         }
 
         return p;
     }
 
     Pile::Pile() {
-        cards = std::vector<std::shared_ptr<Card>>{};
+        m_cards = std::vector<std::shared_ptr<Card>>{};
     }
 
     Pile::~Pile() = default;
 
-    void Pile::addCard(const std::shared_ptr<Card>& card) {
-        cards.push_back(card);
+    void Pile::add_card(const std::shared_ptr<Card>& card) {
+        m_cards.push_back(card);
     }
 
     bool Pile::dump(Pile &other, const unsigned char numCards) {
-        if (numCards > cards.size())
+        if (numCards > m_cards.size())
             return false;
 
         for (int i = 0; i < numCards; i++) {
-            other.cards.push_back(cards.back());
-            cards.pop_back();
+            other.m_cards.push_back(m_cards.back());
+            m_cards.pop_back();
         }
 
         return true;
@@ -107,57 +107,57 @@ namespace rummy {
 
     Pile Pile::combine(const Pile* pile) const {
         auto p = Pile{};
-        p.cards.insert(p.cards.begin(), cards.begin(), cards.end());
-        p.cards.insert(p.cards.end(), pile->cards.begin(), pile->cards.end());
+        p.m_cards.insert(p.m_cards.begin(), m_cards.begin(), m_cards.end());
+        p.m_cards.insert(p.m_cards.end(), pile->m_cards.begin(), pile->m_cards.end());
 
         return p;
     }
 
 
     void Pile::sort() {
-        std::sort(cards.begin(), cards.end(), compareCards);
+        std::sort(m_cards.begin(), m_cards.end(), compareCards);
     }
 
     void Pile::shuffle() {
         std::random_device rd;
         std::mt19937 g(rd());
 
-        std::shuffle(cards.begin(),cards.end(), g);
+        std::shuffle(m_cards.begin(),m_cards.end(), g);
     }
 
-    unsigned short Pile::calcPoints() const {
-        return std::accumulate(cards.begin(), cards.end(), 0u, [](const auto& sum, const auto& card) {
-            return sum + card->getPointValue();
+    unsigned short Pile::calc_points() const {
+        return std::accumulate(m_cards.begin(), m_cards.end(), 0u, [](const auto& sum, const auto& card) {
+            return sum + card->get_point_value();
         });
     }
 
     unsigned char Pile::size() const {
-        return cards.size();
+        return m_cards.size();
     }
 
-    std::string Pile::toString() const {
-        return std::accumulate(cards.begin(), cards.end(), std::string{}, [](const auto& str, const auto& card) {
-            return str + " " + card->toString();
+    std::string Pile::to_string() const {
+        return std::accumulate(m_cards.begin(), m_cards.end(), std::string{}, [](const auto& str, const auto& card) {
+            return str + " " + card->to_string();
         });
     }
 
-    unsigned short Pile::getValue() const {
-        return std::accumulate(cards.begin(), cards.end(), 0u, [](unsigned short sum, const auto& card) {
-            return sum + card->getPointValue();
+    unsigned short Pile::get_value() const {
+        return std::accumulate(m_cards.begin(), m_cards.end(), 0u, [](unsigned short sum, const auto& card) {
+            return sum + card->get_point_value();
         });
     }
 
-    std::vector<std::shared_ptr<Card>> Pile::getCards() const {
-        std::vector c(cards);
+    std::vector<std::shared_ptr<Card>> Pile::get_cards() const {
+        std::vector c(m_cards);
         return c;
     }
 
-    std::shared_ptr<Card> Pile::getCard(const unsigned char index) const {
-        return cards.at(index);
+    std::shared_ptr<Card> Pile::get_card(const unsigned char index) const {
+        return m_cards.at(index);
     }
 
-    void Pile::removeCard(const unsigned char index) {
+    void Pile::remove_at(const unsigned char index) {
         // TODO: Look into if a std::list would be a better option given the fact that this operation is very expensive
-        cards.erase(cards.begin() + index);
+        m_cards.erase(m_cards.begin() + index);
     }
 }

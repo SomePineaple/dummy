@@ -8,15 +8,15 @@
 #include "player.h"
 
 namespace rummy::clients {
-    class ConsolePlayer : public Player {
-        std::string name;
-        void printGameState(const GameState* gs) const;
-        bool askAndDiscard(GameState* gs);
-        void askAndAdd(GameState* gs);
+    class ConsolePlayer final : public Player {
+        std::string m_name;
+        void print_game_state(const GameState* gs) const;
+        bool ask_and_discard(GameState* gs);
+        void ask_and_add(GameState* gs);
     public:
-        explicit ConsolePlayer(const std::string&  n) : name(n) {}
+        explicit ConsolePlayer(const std::string&  n) : m_name(n) {}
 
-        bool runTurn(GameState* gs) override;
+        bool run_turn(GameState* gs) override;
         [[nodiscard]] std::shared_ptr<Player> clone() const override;
     };
 } // game

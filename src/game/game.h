@@ -9,6 +9,10 @@
 using namespace std;
 
 namespace rummy {
+    enum GameStatus {
+        NOT_OVER, P1_WINS, P2_WINS
+    };
+
     struct GameState {
         std::shared_ptr<clients::Player> opponent;
         shared_ptr<clients::Player> player;
@@ -22,14 +26,14 @@ namespace rummy {
     };
 
     class Game {
-        shared_ptr<clients::Player> p1;
-        shared_ptr<clients::Player> p2;
-        unique_ptr<GameState> gs;
+        shared_ptr<clients::Player> m_p1;
+        shared_ptr<clients::Player> m_p2;
+        unique_ptr<GameState> m_gs;
     public:
         explicit Game(const GameState& gs);
         Game(const shared_ptr<clients::Player>& p1, const shared_ptr<clients::Player>& p2);
-        void runRound();
-        [[nodiscard]] bool isGameOver() const;
+        void run_round();
+        [[nodiscard]] GameStatus is_game_over() const;
     };
 } // game
 

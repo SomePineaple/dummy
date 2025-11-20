@@ -10,53 +10,53 @@
 #include "game.h"
 
 namespace rummy::clients {
-    bool ConsolePlayer::runTurn(GameState* gs) {
+    bool ConsolePlayer::run_turn(GameState* gs) {
         if (gs == nullptr)
             return false;
 
         bool hasDiscarded = false;
-        printGameState(gs);
-        cout << boost::format("You are %s\nType:\n[S] to draw from stock\n[D] to draw from discard\n") % name << endl;
+        print_game_state(gs);
+        cout << boost::format("You are %s\nType:\n[S] to draw from stock\n[D] to draw from discard\n") % m_name << endl;
 
         char response;
         cin >> response;
         switch (response) {
             case 's':
             case 'S':
-                if (!drawFromStock(gs, 1)) return false;
-                cout << "You drew: " << hand.getCard(hand.size() - 1)->toString() << endl;
-                hand.sort();
+                if (!draw_from_stock(gs, 1)) return false;
+                cout << "You drew: " << m_hand.get_card(m_hand.size() - 1)->to_string() << endl;
+                m_hand.sort();
                 break;
             case 'd':
             case 'D':
                 cout << "How many cards would you like to draw?\n";
                 cin >> response;
-                drawFromDiscard(gs, response - '0');
-                hand.sort();
+                draw_from_discard(gs, response - '0');
+                m_hand.sort();
                 break;
             default:
                 return false;
         }
 
         do {
-            printGameState(gs);
+            print_game_state(gs);
             cout << "[P] to play a meld\n[A] to add a card to the meld\n[D] to discard\n[Q] to quit" << endl;
             cin >> response;
 
             switch (response) {
                 case 'D':
-                    hasDiscarded = askAndDiscard(gs);
+                    hasDiscarded = ask_and_discard(gs);
                     if (hasDiscarded)
                         response = 'Q';
                     else
                         cout << "Failed to discard\n";
                     break;
                 case 'P':
-                    if (!playWorkingMeld(gs))
+                    if (!play_working_meld(gs))
                         cout << "Cannot play the current meld, it is invalid.\n";
                     break;
                 case 'A':
-                    askAndAdd(gs);
+                    ask_and_add(gs);
                     break;
                 case 'Q':
                     break;
@@ -65,29 +65,29 @@ namespace rummy::clients {
             }
         } while (response != 'Q');
 
-        return hasDiscarded && workingMeld.size() == 0;
+        return hasDiscarded && m_WorkingMeld.size() == 0;
     }
 
-    bool ConsolePlayer::askAndDiscard(GameState* gs) {
+    bool ConsolePlayer::ask_and_discard(GameState* gs) {
         cout << "Which card would you like to discard?" << endl;
         string response;
         cin >> response;
 
-        for (int i = 0; i < hand.size(); i++) {
-            if (hand.getCard(i)->toString() == response)
+        for (int i = 0; i < m_hand.size(); i++) {
+            if (m_hand.get_card(i)->to_string() == response)
                 return discard(gs, i);
         }
 
         return false;
     }
 
-    void ConsolePlayer::askAndAdd(GameState *gs) {
+    void ConsolePlayer::ask_and_add(GameState *gs) {
         cout << "Which card would you like to add?" << endl;
         string response;
         cin >> response;
-        for (int i = 0; i < hand.size(); i++) {
-            if (hand.getCard(i)->toString() == response) {
-                addToWorkingMeld(i);
+        for (int i = 0; i < m_hand.size(); i++) {
+            if (m_hand.get_card(i)->to_string() == response) {
+                add_to_working_meld(i);
                 return;
             }
         }
@@ -95,17 +95,17 @@ namespace rummy::clients {
         cout << "that was not a valid card.\n";
     }
 
-    void ConsolePlayer::printGameState(const GameState* gs) const {
-        cout << boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->getHandSize());
-        cout << gs->opponent->printMelds();
+    void ConsolePlayer::print_game_state(const GameState* gs) const {
+        cout << boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->get_hand_size());
+        cout << gs->opponent->print_melds();
 
-        cout << boost::format("Discard pile:\n%s\n") % gs->discardPile.toString();
-        cout << boost::format("Your hand:\n%s\n") % hand.toString();
-        cout << boost::format("Current building a meld:\n%s\n") % workingMeld.toString();
+        cout << boost::format("Discard pile:\n%s\n") % gs->discardPile.to_string();
+        cout << boost::format("Your hand:\n%s\n") % m_hand.to_string();
+        cout << boost::format("Current building a meld:\n%s\n") % m_WorkingMeld.to_string();
         cout << "You have played:\n";
 
-        for (auto& m : playedMelds) {
-            cout << m->toString() << ", ";
+        for (auto& m : m_PlayedMelds) {
+            cout << m->to_string() << ", ";
         }
 
         cout << endl;

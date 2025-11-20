@@ -8,6 +8,7 @@
 #include <vector>
 
 namespace rummy {
+    using namespace std;
     enum Suit {
         HEARTS, DIAMONDS, SPADES, CLUBS
     };
@@ -16,31 +17,33 @@ namespace rummy {
         const Suit suit;
         const unsigned char value;
 
-        [[nodiscard]] unsigned short getPointValue() const;
-        [[nodiscard]] std::string toString() const;
+        [[nodiscard]] unsigned short get_point_value() const;
+        [[nodiscard]] std::string to_string() const;
     };
 
     class Pile {
     public:
         Pile();
         ~Pile();
+
         void sort();
         void shuffle();
-        void addCard(const std::shared_ptr<Card>& card);
+        void add_card(const shared_ptr<Card>& card);
         bool dump(Pile& other, unsigned char numCards);
-        [[nodiscard]] unsigned short calcPoints() const;
-        [[nodiscard]] unsigned char size() const;
+
+        [[nodiscard]] uint16_t calc_points() const;
+        [[nodiscard]] uint8_t size() const;
         [[nodiscard]] Pile combine(const Pile* pile) const;
-        [[nodiscard]] std::string toString() const;
-        [[nodiscard]] unsigned short getValue() const;
-        [[nodiscard]] std::vector<std::shared_ptr<Card>> getCards() const;
-        [[nodiscard]] std::shared_ptr<Card> getCard(unsigned char index) const;
-        void removeCard(unsigned char index);
+        [[nodiscard]] string to_string() const;
+        [[nodiscard]] uint16_t get_value() const;
+        [[nodiscard]] vector<shared_ptr<Card>> get_cards() const;
+        [[nodiscard]] shared_ptr<Card> get_card(uint8_t index) const;
+        void remove_at(uint8_t index);
     protected:
-        std::vector<std::shared_ptr<Card>> cards;
+        vector<shared_ptr<Card>> m_cards;
     };
 
-    Pile getFullDeck();
+    Pile get_full_deck();
 }
 
 #endif //DUMMY_CARDS_H

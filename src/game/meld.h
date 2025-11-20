@@ -5,8 +5,6 @@
 #ifndef DUMMY_MELD_H
 #define DUMMY_MELD_H
 
-#include <optional>
-
 #include "cards.h"
 
 namespace rummy {
@@ -15,11 +13,11 @@ namespace rummy {
     };
 
     class Meld : public Pile {
-        Meld* buildingFrom;
+        Meld* m_BuildingFrom;
     public:
         Meld();
-        [[nodiscard]] MeldType getMeldType() const;
-        bool tryBuildFrom(Meld* buildingFrom);
+        [[nodiscard]] MeldType get_meld_type() const;
+        bool try_build_from(Meld* other);
     };
 } // game
 

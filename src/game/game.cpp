@@ -11,10 +11,10 @@ namespace rummy {
     using namespace clients;
 
     GameState::GameState(const shared_ptr<Player>& p, const shared_ptr<Player>& o) :
-            opponent(o), player(p), stockPile(getFullDeck()) {
+            opponent(o), player(p), stockPile(get_full_deck()) {
         stockPile.shuffle();
-        player->drawFromStock(this, 13);
-        opponent->drawFromStock(this, 13);
+        player->draw_from_stock(this, 13);
+        opponent->draw_from_stock(this, 13);
         stockPile.dump(discardPile, 1);
     }
 
@@ -26,30 +26,34 @@ namespace rummy {
         melds(clone->melds) {}
 
     Game::Game(const GameState& gs) {
-        p1 = gs.player;
-        p2 = gs.opponent;
+        m_p1 = gs.player;
+        m_p2 = gs.opponent;
 
-        this->gs = make_unique<GameState>(gs);
+        this->m_gs = make_unique<GameState>(gs);
     }
 
     Game::Game(const shared_ptr<Player>& p1, const shared_ptr<Player>& p2) {
-        gs = make_unique<GameState>(p1, p2);
-        this->p1 = p1;
-        this->p2 = p2;
+        m_gs = make_unique<GameState>(p1, p2);
+        this->m_p1 = p1;
+        this->m_p2 = p2;
     }
 
 
-    bool Game::isGameOver() const {
-        return p1->getHandSize() == 0 || p2->getHandSize() == 0 || gs->stockPile.size() == 0;
+    GameStatus Game::is_game_over() const {
+        if (m_p1->get_hand_size() == 0 || m_p2->get_hand_size() == 0 || m_gs->stockPile.size() == 0) {
+            return m_p1->calc_points() > m_p2->calc_points() ? P1_WINS : P2_WINS;
+        }
+
+        return NOT_OVER;
     }
 
-    void Game::runRound() {
-        auto backupState = make_unique<GameState>(gs.get());
+    void Game::run_round() {
+        auto backupState = make_unique<GameState>(m_gs.get());
 
-        if (!gs->player->runTurn(gs.get())) {
-            gs.swap(backupState);
+        if (!m_gs->player->run_turn(m_gs.get())) {
+            m_gs.swap(backupState);
         } else {
-            swap(gs->player, gs->opponent);
+            swap(m_gs->player, m_gs->opponent);
         }
     }
 } // game
