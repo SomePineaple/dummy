@@ -33,7 +33,7 @@ namespace rummy {
         this->buildingFrom = nullptr;
     }
 
-    meld_type meld::getMeldType() const {
+    meld_type meld::meld_type() const {
         auto c = cards;
         if (buildingFrom != nullptr) {
             c = combine(buildingFrom).get_cards();
@@ -47,9 +47,9 @@ namespace rummy {
         return INVALID;
     }
 
-    bool meld::tryBuildFrom(meld* buildingFrom) {
-        this->buildingFrom = buildingFrom;
-        if (getMeldType() != INVALID)
+    bool meld::try_build_from(meld* building_from) {
+        this->buildingFrom = building_from;
+        if (meld_type() != INVALID)
             return true;
         this->buildingFrom = nullptr;
         return false;

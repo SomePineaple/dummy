@@ -16,8 +16,8 @@ namespace rummy {
         meld* buildingFrom;
     public:
         meld();
-        [[nodiscard]] meld_type getMeldType() const;
-        bool tryBuildFrom(meld* buildingFrom);
+        [[nodiscard]] meld_type meld_type() const;
+        bool try_build_from(meld* building_from);
     };
 } // game
 

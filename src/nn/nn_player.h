@@ -10,10 +10,14 @@
 
 namespace rummy::nn {
     class nn_player final : public clients::player {
-        nn_logic logic;
+        shared_ptr<nn_logic> logic;
+        bool try_play_cards(const vector<uint8_t>& cards);
     public:
-        nn_player(const network<sequential>& e, const network<sequential>& n) : logic{e, n} {}
-    }; // nn
-} // rummy
+        nn_player(const network<sequential>& e, const network<sequential>& n) : logic(make_shared<nn_logic>(e, n)) {}
+
+        bool run_turn(game_state *gs) override;
+        [[nodiscard]] shared_ptr<player> clone() const override;
+    };
+} // rummy::nn
 
 #endif //DUMMY_NN_PLAYER_H
