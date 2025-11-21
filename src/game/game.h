@@ -6,15 +6,15 @@
 #define DUMMY_GAME_H
 #include "player.h"
 
-using namespace std;
-
 namespace rummy {
+    using namespace std;
+
     enum GameStatus {
         NOT_OVER, P1_WINS, P2_WINS
     };
 
     struct GameState {
-        std::shared_ptr<clients::Player> opponent;
+        shared_ptr<clients::Player> opponent;
         shared_ptr<clients::Player> player;
         Pile stockPile;
         Pile discardPile;
@@ -34,6 +34,7 @@ namespace rummy {
         Game(const shared_ptr<clients::Player>& p1, const shared_ptr<clients::Player>& p2);
         void run_round();
         [[nodiscard]] GameStatus is_game_over() const;
+        void notify_players() const;
     };
 } // game
 

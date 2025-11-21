@@ -27,5 +27,7 @@ int main(const int numArgs, const char** args) {
     while (game.is_game_over() == rummy::NOT_OVER)
         game.run_round();
 
+    game.notify_players();
+
     return 0;
 }

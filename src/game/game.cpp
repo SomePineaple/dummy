@@ -56,4 +56,10 @@ namespace rummy {
             swap(m_gs->player, m_gs->opponent);
         }
     }
+
+    void Game::notify_players() const {
+        m_p1->notify_player(m_p2->calc_points());
+        m_p2->notify_player(m_p1->calc_points());
+    }
+
 } // game

@@ -33,6 +33,7 @@ namespace rummy::clients {
         virtual bool run_turn(GameState* gs);
         [[nodiscard]] virtual std::shared_ptr<Player> clone() const;
         virtual void close();
+        virtual void notify_player(uint16_t opponentPoints) {}
     };
 } // game
 

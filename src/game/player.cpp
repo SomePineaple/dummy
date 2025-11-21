@@ -9,11 +9,11 @@
 #include "game.h"
 
 namespace rummy::clients {
-    bool Player::draw_from_stock(GameState* gs, const unsigned char numCards) {
+    bool Player::draw_from_stock(GameState* gs, const uint8_t numCards) {
         return gs->stockPile.dump(m_hand, numCards);
     }
 
-    bool Player::draw_from_discard(GameState* gs, const unsigned char numCards) {
+    bool Player::draw_from_discard(GameState* gs, const uint8_t numCards) {
         if (gs->discardPile.dump(m_hand, numCards)) {
             if (numCards != 1)
                 m_hand.dump(m_WorkingMeld, 1);
@@ -36,7 +36,7 @@ namespace rummy::clients {
         return false;
     }
 
-    bool Player::discard(GameState* gs, const unsigned char cardNumber) {
+    bool Player::discard(GameState* gs, const uint8_t cardNumber) {
         if (cardNumber >= m_hand.size())
             return false;
         gs->discardPile.add_card(m_hand.get_card(cardNumber));
@@ -45,7 +45,7 @@ namespace rummy::clients {
         return true;
     }
 
-    bool Player::add_to_working_meld(const unsigned char cardNumber) {
+    bool Player::add_to_working_meld(const uint8_t cardNumber) {
         if (cardNumber >= m_hand.size())
             return false;
 
@@ -55,8 +55,7 @@ namespace rummy::clients {
         return true;
     }
 
-
-    unsigned short Player::calc_points() {
+    uint16_t Player::calc_points() {
         unsigned char sum = std::accumulate(m_PlayedMelds.begin(),m_PlayedMelds.end(), 0u, [](const auto& s, const auto& m) {
             return s + m->calc_points();
         });
