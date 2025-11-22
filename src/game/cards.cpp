@@ -9,16 +9,16 @@
 #include <algorithm>
 
 namespace rummy {
-    unsigned char getSortValue(const std::shared_ptr<Card>& card) {
-        return static_cast<unsigned char>(card->suit * 13) + card->value;
+    bool cmp_cards(const std::shared_ptr<Card>& c1, const std::shared_ptr<Card>& c2) {
+        return c1->get_sort_value() < c2->get_sort_value();
     }
 
-    bool compareCards(const std::shared_ptr<Card>& c1, const std::shared_ptr<Card>& c2) {
-        return getSortValue(c1) < getSortValue(c2);
+    uint8_t Card::get_sort_value() const {
+        return static_cast<uint8_t>(suit * 13) + value;
     }
 
-    std::string Card::to_string() const {
-        std::string str;
+    string Card::to_string() const {
+        string str;
 
         switch (value) {
             case 1:
@@ -115,7 +115,7 @@ namespace rummy {
 
 
     void Pile::sort() {
-        std::sort(m_cards.begin(), m_cards.end(), compareCards);
+        std::sort(m_cards.begin(), m_cards.end(), cmp_cards);
     }
 
     void Pile::shuffle() {

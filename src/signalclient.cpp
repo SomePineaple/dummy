@@ -9,7 +9,7 @@
 void printHelp() {
     std::cout << "This program requires a working installation of signal-cli in your path, and takes two arguments\n";
     std::cout << "1: <playerNumber> - the phone number of the person you want to play with\n";
-    std::cout << "2: <botNUmber> - the phone number of the account registered with signal-cli" << endl;
+    std::cout << "2: <botNUmber> - the phone number of the account registered with signal-cli" << std::endl;
 }
 
 using namespace std;

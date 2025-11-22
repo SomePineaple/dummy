@@ -15,10 +15,11 @@ namespace rummy {
 
     struct Card {
         const Suit suit;
-        const unsigned char value;
+        const uint8_t value;
 
-        [[nodiscard]] unsigned short get_point_value() const;
-        [[nodiscard]] std::string to_string() const;
+        [[nodiscard]] uint16_t get_point_value() const;
+        [[nodiscard]] uint8_t get_sort_value() const;
+        [[nodiscard]] string to_string() const;
     };
 
     class Pile {
@@ -29,7 +30,7 @@ namespace rummy {
         void sort();
         void shuffle();
         void add_card(const shared_ptr<Card>& card);
-        bool dump(Pile& other, unsigned char numCards);
+        bool dump(Pile& other, uint8_t numCards);
 
         [[nodiscard]] uint16_t calc_points() const;
         [[nodiscard]] uint8_t size() const;

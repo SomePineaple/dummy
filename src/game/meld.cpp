@@ -5,7 +5,7 @@
 #include "meld.h"
 
 namespace rummy {
-    bool is_valid_set(const std::vector<std::shared_ptr<Card>>& cards) {
+    bool is_valid_set(const vector<shared_ptr<Card>>& cards) {
         if (cards.size() < 3) return false;
 
         const auto number = cards[0]->value;
@@ -16,14 +16,25 @@ namespace rummy {
         return true;
     }
 
-    bool is_valid_run(const std::vector<std::shared_ptr<Card>>& cards) {
+    bool is_valid_run(const vector<shared_ptr<Card>>& cards) {
         if (cards.size() < 3) return false;
 
-        const auto suit = cards[0]->suit;
+        vector cardsMut(cards);
+        sort(cardsMut.begin(), cardsMut.end(), [](const auto& c1, const auto& c2) {
+            return c1->get_sort_value() < c2->get_sort_value();
+        });
+
+        // If we have a high ace we will put it at the back.
+        if (cardsMut[0]->value == 1 && cardsMut[1]->value != 2) {
+            cardsMut.push_back(cardsMut.front());
+            cardsMut.erase(cardsMut.begin());
+        }
+
+        const auto suit = cardsMut[0]->suit;
         for (int i = 1; i < cards.size(); i++) {
-            if (cards[i]->suit != suit) return false;
-            if (i == cards.size() - 1 && cards[i]->value == 1 && cards[i-1]->value == 13) return true;
-            if (cards[i]->value != cards[i-1]->value + 1) return false;
+            if (cardsMut[i]->suit != suit) return false;
+            if (i == cards.size() - 1 && cardsMut[i]->value == 1 && cardsMut[i-1]->value == 13) return true;
+            if (cardsMut[i]->value != cardsMut[i-1]->value + 1) return false;
         }
 
         return true;
@@ -48,10 +59,11 @@ namespace rummy {
     }
 
     bool Meld::try_build_from(Meld* other) {
-        this->m_BuildingFrom = other;
+        m_BuildingFrom = other;
         if (get_meld_type() != INVALID)
             return true;
-        this->m_BuildingFrom = nullptr;
+
+        m_BuildingFrom = nullptr;
         return false;
     }
 } // game
