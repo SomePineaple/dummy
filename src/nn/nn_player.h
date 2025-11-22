@@ -9,14 +9,14 @@
 #include "../game/player.h"
 
 namespace rummy::nn {
-    class nn_player final : public clients::player {
+    class nn_player final : public clients::Player {
         shared_ptr<nn_logic> logic;
         bool try_play_cards(const vector<uint8_t>& cards);
     public:
         nn_player(const network<sequential>& e, const network<sequential>& n) : logic(make_shared<nn_logic>(e, n)) {}
 
-        bool run_turn(game_state *gs) override;
-        [[nodiscard]] shared_ptr<player> clone() const override;
+        bool run_turn(GameState *gs) override;
+        [[nodiscard]] shared_ptr<Player> clone() const override;
     };
 } // rummy::nn
 

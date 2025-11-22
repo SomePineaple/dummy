@@ -2,7 +2,7 @@
 // Created by somepineaple on 11/12/25.
 //
 
-#include "signalplayer.h"
+#include "signal_player.h"
 
 #include "nlohmann/json.hpp"
 #include <boost/process/v2/environment.hpp>

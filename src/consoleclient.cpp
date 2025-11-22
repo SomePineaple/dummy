@@ -3,7 +3,7 @@
 //
 
 #include "game/game.h"
-#include "game/consoleplayer.h"
+#include "game/console_player.h"
 
 using namespace rummy;
 

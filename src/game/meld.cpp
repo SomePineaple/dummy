@@ -3,6 +3,7 @@
 //
 
 #include "meld.h"
+#include <algorithm>
 
 namespace rummy {
     bool is_valid_set(const vector<shared_ptr<Card>>& cards) {

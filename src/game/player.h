@@ -27,9 +27,10 @@ namespace rummy::clients {
         virtual ~Player() = default;
 
         bool draw_from_stock(GameState* gs, unsigned char numCards);
-        unsigned short calc_points();
+        int16_t calc_points();
         [[nodiscard]] std::string print_melds() const;
         [[nodiscard]] unsigned char get_hand_size() const;
+        [[nodiscard]] shared_ptr<Card> get_card(uint8_t index) const;
         virtual bool run_turn(GameState* gs);
         [[nodiscard]] virtual std::shared_ptr<Player> clone() const;
         virtual void close();

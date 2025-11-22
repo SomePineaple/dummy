@@ -3,8 +3,8 @@
 #include <iostream>
 
 #include "game/game.h"
-#include "game/consoleplayer.h"
-#include "signalbot/signalplayer.h"
+#include "game/console_player.h"
+#include "signalbot/signal_player.h"
 
 void printHelp() {
     std::cout << "This program requires a working installation of signal-cli in your path, and takes two arguments\n";

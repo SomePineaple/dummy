@@ -2,7 +2,7 @@
 // Created by nj60 on 11/12/25.
 //
 
-#include "consoleplayer.h"
+#include "console_player.h"
 
 #include <iostream>
 #include <string>

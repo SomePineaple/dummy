@@ -17,7 +17,7 @@ namespace rummy::nn {
         }
     }
 
-    vec_t nn_logic::get_card_embedding(const card& c) {
+    vec_t nn_logic::get_card_embedding(const Card& c) {
         const auto embedding_iterator = embeddings.find(c.get_sort_value());
         if (embedding_iterator == embeddings.end()) {
             auto embedded = embedder.predict(c.one_hot());
@@ -28,14 +28,14 @@ namespace rummy::nn {
         return embedding_iterator->second;
     }
 
-    void nn_logic::init_gs(const game_state *gs) {
+    void nn_logic::init_gs(const GameState *gs) {
         std::array<float, CARD_EMBEDDING_SIZE> padding{};
         padding.fill(0);
 
         std::vector<float> net_in;
         // Normalize to -1 -> 1 scale
         net_in.push_back(static_cast<float>(gs->stockPile.size()) / 12.5f - 1.0f);
-        net_in.push_back(2.0f * static_cast<float>(gs->opponent->hand_size()) / MAX_HAND_SIZE - 1.0f);
+        net_in.push_back(2.0f * static_cast<float>(gs->opponent->get_hand_size()) / MAX_HAND_SIZE - 1.0f);
 
         // Add discard pile
         for (int i = 0; i < MAX_DISCARD_SIZE; i++) {
@@ -61,7 +61,7 @@ namespace rummy::nn {
 
         // Add player hand
         for (int i = 0; i < MAX_HAND_SIZE; i++) {
-            if (i < gs->player->hand_size()) {
+            if (i < gs->player->get_hand_size()) {
                 vec_t embed_vec = get_card_embedding(*gs->player->get_card(i));
                 net_in.insert(net_in.end(), embed_vec.begin(), embed_vec.end());
             } else {

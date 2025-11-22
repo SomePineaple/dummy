@@ -31,10 +31,10 @@ namespace rummy::nn {
         std::unordered_map<uint8_t, vec_t> embeddings{};
         vec_t net_output;
 
-        vec_t get_card_embedding(const card& c);
+        vec_t get_card_embedding(const Card& c);
     public:
         nn_logic(const network<sequential>& e, const network<sequential>& n);
-        void init_gs(const game_state* gs);
+        void init_gs(const GameState* gs);
         // returns 0 to draw from stock, and anything more is how many to draw from discard.
         uint8_t get_draw() const;
         std::vector<uint8_t> get_play_cards() const;

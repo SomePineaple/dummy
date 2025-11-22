@@ -8,16 +8,18 @@
 #include "player.h"
 
 namespace rummy::clients {
-    class console_player final : public player {
-        std::string name;
-        void print_game_state(const game_state* gs) const;
-        bool ask_and_discard(game_state* gs);
-        void ask_and_add(game_state* gs);
+    using namespace std;
+    class ConsolePlayer final : public Player {
+        string m_name;
+        void print_game_state(const GameState* gs) const;
+        bool ask_and_discard(GameState* gs);
+        void ask_and_add(GameState* gs);
     public:
-        explicit console_player(const std::string&  n) : name(n) {}
+        explicit ConsolePlayer(const string&  n) : m_name(n) {}
 
-        bool run_turn(game_state* gs) override;
-        [[nodiscard]] std::shared_ptr<player> clone() const override;
+        bool run_turn(GameState* gs) override;
+        [[nodiscard]] shared_ptr<Player> clone() const override;
+        void notify_player(uint16_t opponentPoints) override;
     };
 } // game
 
