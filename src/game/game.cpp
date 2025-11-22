@@ -8,8 +8,9 @@
 #include <memory>
 
 namespace rummy {
+    using namespace clients;
 
-    game_state::game_state(const shared_ptr<clients::player>& p, const shared_ptr<clients::player>& o) :
+    GameState::GameState(const shared_ptr<Player>& p, const shared_ptr<Player>& o) :
             opponent(o), player(p), stockPile(get_full_deck()) {
         stockPile.shuffle();
         player->draw_from_stock(this, 13);
@@ -17,42 +18,48 @@ namespace rummy {
         stockPile.dump(discardPile, 1);
     }
 
-    game_state::game_state(const game_state* clone):
+    GameState::GameState(const GameState* clone):
         opponent(clone->opponent->clone()),
         player(clone->player->clone()),
         stockPile(clone->stockPile),
         discardPile(clone->discardPile),
         melds(clone->melds) {}
 
-    game::game(const game_state& gs) {
-        p1 = gs.player;
-        p2 = gs.opponent;
+    Game::Game(const GameState& gs) {
+        m_p1 = gs.player;
+        m_p2 = gs.opponent;
 
-        this->gs = make_unique<game_state>(gs);
+        this->m_gs = make_unique<GameState>(gs);
     }
 
-    game::game(const shared_ptr<clients::player>& p1, const shared_ptr<clients::player>& p2) {
-        gs = make_unique<game_state>(p1, p2);
-        this->p1 = p1;
-        this->p2 = p2;
+    Game::Game(const shared_ptr<Player>& p1, const shared_ptr<Player>& p2) {
+        m_gs = make_unique<GameState>(p1, p2);
+        this->m_p1 = p1;
+        this->m_p2 = p2;
     }
 
 
-    game_winner game::get_winner() const {
-        if (p1->hand_size() == 0 || p2->hand_size() == 0 || gs->stockPile.size() == 0) {
-            return p1->calc_points() > p2->calc_points() ? PLAYER_ONE : PLAYER_TWO;
+    GameStatus Game::is_game_over() const {
+        if (m_p1->get_hand_size() == 0 || m_p2->get_hand_size() == 0 || m_gs->stockPile.size() == 0) {
+            return m_p1->calc_points() > m_p2->calc_points() ? P1_WINS : P2_WINS;
         }
 
         return NOT_OVER;
     }
 
-    void game::run_round() {
-        auto backupState = make_unique<game_state>(gs.get());
+    void Game::run_round() {
+        auto backupState = make_unique<GameState>(m_gs.get());
 
-        if (!gs->player->run_turn(gs.get())) {
-            gs.swap(backupState);
+        if (!m_gs->player->run_turn(m_gs.get())) {
+            m_gs.swap(backupState);
         } else {
-            swap(gs->player, gs->opponent);
+            swap(m_gs->player, m_gs->opponent);
         }
     }
+
+    void Game::notify_players() const {
+        m_p1->notify_player(m_p2->calc_points());
+        m_p2->notify_player(m_p1->calc_points());
+    }
+
 } // game

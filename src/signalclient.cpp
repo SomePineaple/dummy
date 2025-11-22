@@ -3,27 +3,31 @@
 #include <iostream>
 
 #include "game/game.h"
-#include "game/console_player.h"
-#include "signalbot/signal_player.h"
+#include "game/consoleplayer.h"
+#include "signalbot/signalplayer.h"
 
 void printHelp() {
     std::cout << "This program requires a working installation of signal-cli in your path, and takes two arguments\n";
     std::cout << "1: <playerNumber> - the phone number of the person you want to play with\n";
-    std::cout << "2: <botNUmber> - the phone number of the account registered with signal-cli" << endl;
+    std::cout << "2: <botNUmber> - the phone number of the account registered with signal-cli" << std::endl;
 }
 
+using namespace std;
+namespace rc = rummy::clients;
 int main(const int numArgs, const char** args) {
     if (numArgs != 3) {
         printHelp();
         return 1;
     }
 
-    std::string playerNumber = args[1];
-    std::string botNumber = args[2];
+    string playerNumber = args[1];
+    string botNumber = args[2];
 
-    auto g = rummy::game{std::make_shared<rummy::clients::console_player>("Player 1"), std::make_shared<rummy::clients::signal_player>(playerNumber, botNumber)};
-    while (g.get_winner() == rummy::NOT_OVER)
-        g.run_round();
+    auto game = rummy::Game{make_shared<rc::SignalPlayer>(playerNumber, botNumber), make_shared<rc::ConsolePlayer>("Player 1")};
+    while (game.is_game_over() == rummy::NOT_OVER)
+        game.run_round();
+
+    game.notify_players();
 
     return 0;
 }

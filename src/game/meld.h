@@ -8,16 +8,16 @@
 #include "cards.h"
 
 namespace rummy {
-    enum meld_type {
+    enum MeldType {
         INVALID, RUN, SET
     };
 
-    class meld : public pile {
-        meld* buildingFrom;
+    class Meld : public Pile {
+        Meld* m_BuildingFrom;
     public:
-        meld();
-        [[nodiscard]] meld_type meld_type() const;
-        bool try_build_from(meld* buildingFrom);
+        Meld();
+        [[nodiscard]] MeldType get_meld_type() const;
+        bool try_build_from(Meld* other);
     };
 } // game
 

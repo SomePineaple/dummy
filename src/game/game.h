@@ -6,34 +6,35 @@
 #define DUMMY_GAME_H
 #include "player.h"
 
-using namespace std;
-
 namespace rummy {
-    enum game_winner {
-        PLAYER_ONE, PLAYER_TWO, NOT_OVER
+    using namespace std;
+
+    enum GameStatus {
+        NOT_OVER, P1_WINS, P2_WINS
     };
 
-    struct game_state {
-        std::shared_ptr<clients::player> opponent;
-        shared_ptr<clients::player> player;
-        pile stockPile;
-        pile discardPile;
-        vector<shared_ptr<meld>> melds;
+    struct GameState {
+        shared_ptr<clients::Player> opponent;
+        shared_ptr<clients::Player> player;
+        Pile stockPile;
+        Pile discardPile;
+        vector<shared_ptr<Meld>> melds;
 
-        game_state(const shared_ptr<clients::player>& p, const shared_ptr<clients::player>& o);
+        GameState(const shared_ptr<clients::Player>& p, const shared_ptr<clients::Player>& o);
 
-        explicit game_state(const game_state* clone);
+        explicit GameState(const GameState* clone);
     };
 
-    class game {
-        shared_ptr<clients::player> p1;
-        shared_ptr<clients::player> p2;
-        unique_ptr<game_state> gs;
+    class Game {
+        shared_ptr<clients::Player> m_p1;
+        shared_ptr<clients::Player> m_p2;
+        unique_ptr<GameState> m_gs;
     public:
-        explicit game(const game_state& gs);
-        game(const shared_ptr<clients::player>& p1, const shared_ptr<clients::player>& p2);
+        explicit Game(const GameState& gs);
+        Game(const shared_ptr<clients::Player>& p1, const shared_ptr<clients::Player>& p2);
         void run_round();
-        [[nodiscard]] game_winner get_winner() const;
+        [[nodiscard]] GameStatus is_game_over() const;
+        void notify_players() const;
     };
 } // game
 

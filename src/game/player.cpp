@@ -9,89 +9,86 @@
 #include "game.h"
 
 namespace rummy::clients {
-    bool player::draw_from_stock(game_state* gs, const unsigned char numCards) {
-        return gs->stockPile.dump(hand, numCards);
+    bool Player::draw_from_stock(GameState* gs, const uint8_t numCards) {
+        return gs->stockPile.dump(m_hand, numCards);
     }
 
-    bool player::draw_from_discard(game_state* gs, const unsigned char numCards) {
-        if (gs->discardPile.dump(hand, numCards)) {
+    bool Player::draw_from_discard(GameState* gs, const uint8_t numCards) {
+        if (gs->discardPile.dump(m_hand, numCards)) {
             if (numCards != 1)
-                hand.dump(workingMeld, 1);
-            return true;
+                m_hand.dump(m_WorkingMeld, 1);
         }
         return false;
     }
 
-    bool player::play_working_meld(game_state* gs) {
-        workingMeld.sort();
-        if (workingMeld.size() < 3) {
+    bool Player::play_working_meld(GameState* gs) {
+        if (m_WorkingMeld.size() < 3) {
             for (const auto& m : gs->melds) {
-                if (workingMeld.try_build_from(m.get())) return true;
+                if (m_WorkingMeld.try_build_from(m.get())) return true;
             }
-        } else if (workingMeld.meld_type() != INVALID) {
-            playedMelds.push_back(std::make_shared<meld>(workingMeld));
-            gs->melds.push_back(playedMelds.back());
-            workingMeld = meld{};
+        } else if (m_WorkingMeld.get_meld_type() != INVALID) {
+            m_PlayedMelds.push_back(std::make_shared<Meld>(m_WorkingMeld));
+            gs->melds.push_back(m_PlayedMelds.back());
+            m_WorkingMeld = Meld{};
             return true;
         }
 
         return false;
     }
 
-    bool player::discard(game_state* gs, const unsigned char cardNumber) {
-        if (cardNumber >= hand.size())
+    bool Player::discard(GameState* gs, const uint8_t cardNumber) {
+        if (cardNumber >= m_hand.size())
             return false;
-        gs->discardPile.add_card(hand.get_card(cardNumber));
-        hand.remove_card(cardNumber);
+        gs->discardPile.add_card(m_hand.get_card(cardNumber));
+        m_hand.remove_at(cardNumber);
 
         return true;
     }
 
-    bool player::add_to_working_meld(const unsigned char cardNumber) {
-        if (cardNumber >= hand.size())
+    bool Player::add_to_working_meld(const uint8_t cardNumber) {
+        if (cardNumber >= m_hand.size())
             return false;
 
-        workingMeld.add_card(hand.get_card(cardNumber));
-        hand.remove_card(cardNumber);
+        m_WorkingMeld.add_card(m_hand.get_card(cardNumber));
+        m_hand.remove_at(cardNumber);
 
         return true;
     }
 
-
-    int player::calc_points() const {
-        int sum = std::accumulate(playedMelds.begin(),playedMelds.end(), 0, [](const auto& partial_sum, const auto& meld) {
-            return partial_sum + meld->calc_points();
+    int16_t Player::calc_points() {
+        int16_t sum = std::accumulate(m_PlayedMelds.begin(),m_PlayedMelds.end(), 0u, [](const auto& s, const auto& m) {
+            return s + m->calc_points();
         });
 
-        sum -= hand.calc_points();
+        sum -= m_hand.calc_points();
 
         return sum;
     }
 
-    std::string player::print_melds() const {
+    std::string Player::print_melds() const {
         std::string meldsStr;
-        for (const auto& m : playedMelds) {
+        for (const auto& m : m_PlayedMelds) {
             meldsStr += m->to_string() + '\n';
         }
 
         return meldsStr;
     }
 
-    unsigned char player::hand_size() const {
-        return hand.size();
+    unsigned char Player::get_hand_size() const {
+        return m_hand.size();
     }
 
-    std::shared_ptr<card> player::get_card(const uint8_t index) const {
-        return hand.get_card(index);
-    }
-
-    bool player::run_turn(game_state* gs) {
+    bool Player::run_turn(GameState* gs) {
         return false;
     }
 
-    shared_ptr<player> player::clone() const {
-        return make_shared<player>(*this);
+    std::shared_ptr<Card> Player::get_card(const uint8_t index) const {
+        return m_hand.get_card(index);
     }
 
-    void player::clean() {}
+    shared_ptr<Player> Player::clone() const {
+        return make_shared<Player>(*this);
+    }
+
+    void Player::close(){}
 } // game

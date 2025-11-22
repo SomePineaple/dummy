@@ -9,41 +9,44 @@
 #include <cstdint>
 
 namespace rummy {
-    enum suit_type {
+    using namespace std;
+    enum Suit {
         HEARTS, DIAMONDS, SPADES, CLUBS
     };
 
-    struct card {
-        const suit_type suit;
-        const unsigned char value;
+    struct Card {
+        const Suit suit;
+        const uint8_t value;
 
-        card(const suit_type suit, const unsigned char value) : suit(suit), value(value) {}
         [[nodiscard]] uint16_t get_point_value() const;
         [[nodiscard]] uint8_t get_sort_value() const;
-        [[nodiscard]] std::string to_string() const;
+        [[nodiscard]] string to_string() const;
         [[nodiscard]] std::array<float, 17> one_hot() const;
     };
 
-    class pile {
+    class Pile {
     public:
-        pile();
-        ~pile();
+        Pile();
+        ~Pile();
+
         void sort();
         void shuffle();
-        void add_card(const std::shared_ptr<card>& card);
-        bool dump(pile& other, unsigned char numCards);
-        [[nodiscard]] unsigned short calc_points() const;
-        [[nodiscard]] unsigned char size() const;
-        [[nodiscard]] pile combine(const pile* other) const;
-        [[nodiscard]] std::string to_string() const;
-        [[nodiscard]] std::vector<std::shared_ptr<card>> get_cards() const;
-        [[nodiscard]] std::shared_ptr<card> get_card(unsigned char index) const;
-        void remove_card(unsigned char index);
+        void add_card(const shared_ptr<Card>& card);
+        bool dump(Pile& other, uint8_t numCards);
+
+        [[nodiscard]] uint16_t calc_points() const;
+        [[nodiscard]] uint8_t size() const;
+        [[nodiscard]] Pile combine(const Pile* pile) const;
+        [[nodiscard]] string to_string() const;
+        [[nodiscard]] uint16_t get_value() const;
+        [[nodiscard]] vector<shared_ptr<Card>> get_cards() const;
+        [[nodiscard]] shared_ptr<Card> get_card(uint8_t index) const;
+        void remove_at(uint8_t index);
     protected:
-        std::vector<std::shared_ptr<card>> cards;
+        vector<shared_ptr<Card>> m_cards;
     };
 
-    pile get_full_deck();
-} // rummy
+    Pile get_full_deck();
+}
 
 #endif //DUMMY_CARDS_H

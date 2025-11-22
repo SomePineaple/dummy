@@ -3,19 +3,16 @@
 //
 
 #include "game/game.h"
-#include "game/console_player.h"
+#include "game/consoleplayer.h"
 
 using namespace rummy;
 
 int main() {
-    auto p1 = make_shared<clients::console_player>("Player 1");
-    auto p2 = make_shared<clients::console_player>("Player 2");
-
-    //GameState startingGs(p1, p2);
-
-    game game(p1, p2);
-    while (game.get_winner() != NOT_OVER)
+    Game game{make_shared<clients::ConsolePlayer>("Player 1"), make_shared<clients::ConsolePlayer>("Player 2")};
+    while (game.is_game_over() == NOT_OVER)
         game.run_round();
+
+    game.notify_players();
 
     return 0;
 }

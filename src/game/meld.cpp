@@ -4,12 +4,8 @@
 
 #include "meld.h"
 
-#include <algorithm>
-
 namespace rummy {
-    using namespace std;
-
-    bool is_valid_set(const vector<shared_ptr<card>>& cards) {
+    bool is_valid_set(const vector<shared_ptr<Card>>& cards) {
         if (cards.size() < 3) return false;
 
         const auto number = cards[0]->value;
@@ -20,31 +16,38 @@ namespace rummy {
         return true;
     }
 
-    bool is_valid_run(const vector<shared_ptr<card>>& cards) {
+    bool is_valid_run(const vector<shared_ptr<Card>>& cards) {
         if (cards.size() < 3) return false;
 
-        vector cards_mut(cards);
-        sort(cards_mut.begin(), cards_mut.end(), [](const shared_ptr<card>& x, const shared_ptr<card>& y) {
-            return x->get_sort_value() < y->get_sort_value();
+        vector cardsMut(cards);
+        sort(cardsMut.begin(), cardsMut.end(), [](const auto& c1, const auto& c2) {
+            return c1->get_sort_value() < c2->get_sort_value();
         });
-        const auto suit = cards[0]->suit;
+
+        // If we have a high ace we will put it at the back.
+        if (cardsMut[0]->value == 1 && cardsMut[1]->value != 2) {
+            cardsMut.push_back(cardsMut.front());
+            cardsMut.erase(cardsMut.begin());
+        }
+
+        const auto suit = cardsMut[0]->suit;
         for (int i = 1; i < cards.size(); i++) {
-            if (cards[i]->suit != suit) return false;
-            if (i == cards.size() - 1 && cards[i]->value == 1 && cards[i-1]->value == 13) return true;
-            if (cards[i]->value != cards[i-1]->value + 1) return false;
+            if (cardsMut[i]->suit != suit) return false;
+            if (i == cards.size() - 1 && cardsMut[i]->value == 1 && cardsMut[i-1]->value == 13) return true;
+            if (cardsMut[i]->value != cardsMut[i-1]->value + 1) return false;
         }
 
         return true;
     }
 
-    meld::meld() {
-        this->buildingFrom = nullptr;
+    Meld::Meld() {
+        this->m_BuildingFrom = nullptr;
     }
 
-    meld_type meld::meld_type() const {
-        auto c = cards;
-        if (buildingFrom != nullptr) {
-            c = combine(buildingFrom).get_cards();
+    MeldType Meld::get_meld_type() const {
+        auto c = m_cards;
+        if (m_BuildingFrom != nullptr) {
+            c = combine(m_BuildingFrom).get_cards();
         }
 
         if (is_valid_set(c))
@@ -55,11 +58,12 @@ namespace rummy {
         return INVALID;
     }
 
-    bool meld::try_build_from(meld* buildingFrom) {
-        this->buildingFrom = buildingFrom;
-        if (meld_type() != INVALID)
+    bool Meld::try_build_from(Meld* other) {
+        m_BuildingFrom = other;
+        if (get_meld_type() != INVALID)
             return true;
-        this->buildingFrom = nullptr;
+
+        m_BuildingFrom = nullptr;
         return false;
     }
 } // game

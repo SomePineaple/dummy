@@ -2,7 +2,7 @@
 // Created by nj60 on 11/12/25.
 //
 
-#include "console_player.h"
+#include "consoleplayer.h"
 
 #include <iostream>
 #include <string>
@@ -10,13 +10,13 @@
 #include "game.h"
 
 namespace rummy::clients {
-    bool console_player::run_turn(game_state* gs) {
+    bool ConsolePlayer::run_turn(GameState* gs) {
         if (gs == nullptr)
             return false;
 
         bool hasDiscarded = false;
         print_game_state(gs);
-        cout << boost::format("You are %s\nType:\n[S] to draw from stock\n[D] to draw from discard\n") % name << endl;
+        cout << boost::format("You are %s\nType:\n[S] to draw from stock\n[D] to draw from discard\n") % m_name << endl;
 
         char response;
         cin >> response;
@@ -24,15 +24,15 @@ namespace rummy::clients {
             case 's':
             case 'S':
                 if (!draw_from_stock(gs, 1)) return false;
-                cout << "You drew: " << hand.get_card(hand.size() - 1)->to_string() << endl;
-                hand.sort();
+                cout << "You drew: " << m_hand.get_card(m_hand.size() - 1)->to_string() << endl;
+                m_hand.sort();
                 break;
             case 'd':
             case 'D':
                 cout << "How many cards would you like to draw?\n";
                 cin >> response;
                 draw_from_discard(gs, response - '0');
-                hand.sort();
+                m_hand.sort();
                 break;
             default:
                 return false;
@@ -65,28 +65,28 @@ namespace rummy::clients {
             }
         } while (response != 'Q');
 
-        return hasDiscarded && workingMeld.size() == 0;
+        return hasDiscarded && m_WorkingMeld.size() == 0;
     }
 
-    bool console_player::ask_and_discard(game_state* gs) {
+    bool ConsolePlayer::ask_and_discard(GameState* gs) {
         cout << "Which card would you like to discard?" << endl;
         string response;
         cin >> response;
 
-        for (int i = 0; i < hand.size(); i++) {
-            if (hand.get_card(i)->to_string() == response)
+        for (int i = 0; i < m_hand.size(); i++) {
+            if (m_hand.get_card(i)->to_string() == response)
                 return discard(gs, i);
         }
 
         return false;
     }
 
-    void console_player::ask_and_add(game_state *gs) {
+    void ConsolePlayer::ask_and_add(GameState *gs) {
         cout << "Which card would you like to add?" << endl;
         string response;
         cin >> response;
-        for (int i = 0; i < hand.size(); i++) {
-            if (hand.get_card(i)->to_string() == response) {
+        for (int i = 0; i < m_hand.size(); i++) {
+            if (m_hand.get_card(i)->to_string() == response) {
                 add_to_working_meld(i);
                 return;
             }
@@ -95,23 +95,28 @@ namespace rummy::clients {
         cout << "that was not a valid card.\n";
     }
 
-    void console_player::print_game_state(const game_state* gs) const {
-        cout << boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->hand_size());
+    void ConsolePlayer::print_game_state(const GameState* gs) const {
+        cout << boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->get_hand_size());
         cout << gs->opponent->print_melds();
 
         cout << boost::format("Discard pile:\n%s\n") % gs->discardPile.to_string();
-        cout << boost::format("Your hand:\n%s\n") % hand.to_string();
-        cout << boost::format("Current building a meld:\n%s\n") % workingMeld.to_string();
+        cout << boost::format("Your hand:\n%s\n") % m_hand.to_string();
+        cout << boost::format("Current building a meld:\n%s\n") % m_WorkingMeld.to_string();
         cout << "You have played:\n";
 
-        for (auto& m : playedMelds) {
+        for (auto& m : m_PlayedMelds) {
             cout << m->to_string() << ", ";
         }
 
         cout << endl;
     }
 
-    shared_ptr<player> console_player::clone() const {
-        return make_shared<console_player>(*this);
+    shared_ptr<Player> ConsolePlayer::clone() const {
+        return make_shared<ConsolePlayer>(*this);
     }
+
+    void ConsolePlayer::notify_player(uint16_t opponentPoints) {
+        cout << boost::format("The game is over. You have %i points, and your opponent has %i points.") % calc_points() % opponentPoints << endl;
+    }
+
 } // game
