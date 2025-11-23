@@ -7,23 +7,32 @@
 #include "../game/game.h"
 
 namespace rummy::nn {
+    NNLogic::NNLogic(const NNLogic& from) {
+        stringstream ss;
+        ss << from.msp_embedder;
+        ss >> (*msp_embedder);
+        ss.clear();
+        ss << from.msp_actor;
+        ss >> (*msp_actor);
+    }
+
     NNLogic::NNLogic(const NNLogic& mutateFrom, const float mutationStrength, const float mutationChance) {
         stringstream ss;
-        ss << mutateFrom.m_embedder;
-        ss >> m_embedder;
+        ss << mutateFrom.msp_embedder;
+        ss >> (*msp_embedder);
 
         ss.clear();
 
-        ss << mutateFrom.m_actor;
-        ss >> m_actor;
+        ss << mutateFrom.msp_actor;
+        ss >> (*msp_actor);
 
         static std::mt19937 rng(std::random_device{}());
         normal_distribution<float> dist(0.0f, mutationStrength);
         uniform_real_distribution<float> chance(0.0f, 1.0f);
 
         // Randomly mutate weights in embedder
-        for (int i = 0; i < m_embedder.depth(); ++i) {
-            vector<vec_t*> layerParams = m_embedder[i]->weights();
+        for (int i = 0; i < msp_embedder->depth(); ++i) {
+            vector<vec_t*> layerParams = (*msp_embedder)[i]->weights();
             for (auto* paramVec : layerParams) {
                 for (float& val : *paramVec) {
                     if (chance(rng) < mutationChance) {
@@ -35,8 +44,8 @@ namespace rummy::nn {
         }
 
         // Randomly mutate weights in network
-        for (int i = 0; i < m_actor.depth(); ++i) {
-            vector<vec_t*> layerParams = m_actor[i]->weights();
+        for (int i = 0; i < msp_actor->depth(); ++i) {
+            vector<vec_t*> layerParams = (*msp_actor)[i]->weights();
             for (auto* paramVec : layerParams) {
                 for (float& val : *paramVec) {
                     if (chance(rng) < mutationChance) {
@@ -48,12 +57,12 @@ namespace rummy::nn {
         }
     }
 
-    NNLogic::NNLogic(const network<sequential>& e, const network<sequential>& n) : m_embedder(e), m_actor(n) {
-        if (m_embedder.in_data_size() != 17 || m_embedder.out_data_size() != CARD_EMBEDDING_SIZE) {
+    NNLogic::NNLogic(const Net& e, const Net& n) : msp_embedder(e), msp_actor(n) {
+        if (msp_embedder->in_data_size() != 17 || msp_embedder->out_data_size() != CARD_EMBEDDING_SIZE) {
             throw runtime_error("Wrong embedder network size");
         }
 
-        if (m_actor.in_data_size() != NET_INPUT_SIZE || m_actor.out_data_size() != NET_OUTPUT_SIZE) {
+        if (msp_actor->in_data_size() != NET_INPUT_SIZE || msp_actor->out_data_size() != NET_OUTPUT_SIZE) {
             throw runtime_error("Wrong main network dimensions");
         }
     }
@@ -61,7 +70,7 @@ namespace rummy::nn {
     vec_t NNLogic::get_card_embedding(const Card& c) {
         const auto embedding_iterator = embeddings.find(c.get_sort_value());
         if (embedding_iterator == embeddings.end()) {
-            auto embedded = m_embedder.predict(c.one_hot());
+            auto embedded = msp_embedder->predict(c.one_hot());
             embeddings[c.get_sort_value()] = embedded;
             return embedded;
         }
@@ -111,7 +120,7 @@ namespace rummy::nn {
         }
 
         // Finally run network
-        net_output = m_actor.predict(net_in);
+        net_output = msp_actor->predict(net_in);
     }
 
     uint8_t NNLogic::get_draw() const {
@@ -135,9 +144,11 @@ namespace rummy::nn {
                 card_outputs.emplace_back(net_output[i], i - PLAY_OFFSET);
         }
 
-        partial_sort(card_outputs.begin(), card_outputs.begin() + 3, card_outputs.end(), [](const auto& a, const auto& b) {
-            return get<0>(a) > get<0>(b);
-        });
+        if (!card_outputs.empty()) {
+            partial_sort(card_outputs.begin(), min(card_outputs.begin() + 3, card_outputs.end()), card_outputs.end(), [](const auto& a, const auto& b) {
+                return get<0>(a) > get<0>(b);
+            });
+        }
 
         vector<uint8_t> play_cards;
         for (int i = 0; i < min(card_outputs.size(), static_cast<size_t>(3)); i++) {

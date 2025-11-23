@@ -17,9 +17,12 @@ namespace rummy::nn {
         void try_play_cards(const vector<uint8_t>& cards, const GameState* gs);
         void add_to_working_meld(const shared_ptr<Card>& card);
     public:
-        NNPlayer(const network<sequential>& e, const network<sequential>& n) : msp_logic(make_shared<NNLogic>(e, n)), mopt_ToPlay(nullopt) {}
+        //NNPlayer(const network<sequential>& e, const network<sequential>& n) : msp_logic(make_shared<NNLogic>(e, n)), mopt_ToPlay(nullopt) {}
+        explicit NNPlayer(const shared_ptr<NNLogic>& logic) : msp_logic(logic) {}
 
-        bool run_turn(GameState *gs) override;
+        bool run_turn(GameState* gs) override;
+        // Draw from stock and discard a random card
+        void random_turn(GameState* gs);
         [[nodiscard]] shared_ptr<Player> clone() const override;
     };
 } // rummy::nn

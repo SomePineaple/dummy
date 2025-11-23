@@ -70,6 +70,17 @@ namespace rummy::nn {
         }
     }
 
+    void NNPlayer::random_turn(GameState *gs) {
+        draw_from_stock(gs, 1);
+
+        // Discard a random card
+        static std::mt19937 rng(std::random_device{}());
+        uniform_int_distribution<int> dist(0, m_hand.size() - 1);
+
+        discard(gs, dist(rng));
+    }
+
+
     shared_ptr<clients::Player> NNPlayer::clone() const {
         return make_shared<NNPlayer>(*this);
     }
