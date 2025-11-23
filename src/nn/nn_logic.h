@@ -20,7 +20,7 @@ namespace rummy::nn {
     // 0: num cards in stock, 1: num cards in opponents hands, up to 25 cards in discard pile, up to MAX_PLAYED_CARDS played cards on the table, and then up to 26 cards in the current players hand
     constexpr uint16_t NET_INPUT_SIZE = 1 + 1 + MAX_DISCARD_SIZE*CARD_EMBEDDING_SIZE + MAX_PLAYED_CARDS*CARD_EMBEDDING_SIZE + MAX_HAND_SIZE*CARD_EMBEDDING_SIZE;
 
-    class nn_logic {
+    class NNLogic {
         static constexpr uint16_t DISCARD_OFFSET = 47;
         static constexpr uint16_t PLAY_OFFSET = 26;
         static constexpr float PLAY_ACTIVATION_FLOOR = 0.7;
@@ -33,7 +33,7 @@ namespace rummy::nn {
 
         vec_t get_card_embedding(const Card& c);
     public:
-        nn_logic(const network<sequential>& e, const network<sequential>& n);
+        NNLogic(const network<sequential>& e, const network<sequential>& n);
         void init_gs(const GameState* gs);
         // returns 0 to draw from stock, and anything more is how many to draw from discard.
         uint8_t get_draw() const;

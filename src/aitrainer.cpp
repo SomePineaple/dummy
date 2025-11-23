@@ -9,10 +9,12 @@
 #include "nn/nn_logic.h"
 #include "nn/nn_player.h"
 
+using namespace std;
+
 int main() {
     tiny_dnn::network<tiny_dnn::sequential> embedder;
 
-    std::cout << "Building networks..." << std::endl;
+    cout << "Building networks..." << endl;
     embedder << tiny_dnn::layers::fc(17, 32)
         << tiny_dnn::activation::tanh()
         << tiny_dnn::layers::fc(32, 32)
@@ -33,12 +35,12 @@ int main() {
     actor.init_weight();
     actor.bias_init(tiny_dnn::weight_init::xavier());
 
-    std::cout << "done." << std::endl;
+    cout << "done." << endl;
 
-    const rummy::game_state gs{make_shared<rummy::nn::nn_player>(embedder, actor), make_shared<rummy::nn::nn_player>(embedder, actor)};
+    const rummy::GameState gs{make_shared<rummy::nn::NNPlayer>(embedder, actor), make_shared<rummy::nn::NNPlayer>(embedder, actor)};
 
-    std::cout << "creating logic and initializing game state..." << std::endl;
-    rummy::nn::nn_logic logic{embedder, actor};
+    cout << "creating logic and initializing game state..." << endl;
+    rummy::nn::NNLogic logic{embedder, actor};
     logic.init_gs(&gs);
     cout << "done" << std::endl;
 

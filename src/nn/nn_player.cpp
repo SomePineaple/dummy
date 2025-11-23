@@ -5,39 +5,72 @@
 #include "nn_player.h"
 
 namespace rummy::nn {
-    bool nn_player::run_turn(GameState *gs) {
-        logic->init_gs(gs);
-        if (const auto draw = logic->get_draw(); draw == 0) {
+    bool NNPlayer::run_turn(GameState *gs) {
+        mp_logic->init_gs(gs);
+        if (const auto draw = mp_logic->get_draw(); draw == 0) {
             draw_from_stock(gs, 1);
         } else {
             if (!draw_from_discard(gs, draw)) return false;
         }
 
+        try_play_cards(mp_logic->get_play_cards(), gs);
 
+        const uint8_t discardIndex = mp_logic->get_discard();
+        if (discardIndex >= m_hand.size()) {
+            return false;
+        }
 
-        return true;
+        // Save the card we want to discard, because the index will shift after we play cards.
+        const auto toDiscard = m_hand.get_card(discardIndex);
+
+        if (mo_ToPlay != nullopt) {
+            for (const auto& card : mo_ToPlay->get_cards()) {
+                add_to_working_meld(card);
+            }
+
+            play_working_meld(gs);
+        }
+
+        for (int i = 0; i < m_hand.size(); i++) {
+            if (m_hand.get_card(i) == toDiscard)
+                return discard(gs, i);
+        }
+
+        return false;
     }
 
-    // TODO: Finish this.
-    bool nn_player::try_play_cards(const vector<uint8_t>& cards) {
+    void NNPlayer::try_play_cards(const vector<uint8_t>& cards, const GameState* gs) {
+        mo_ToPlay = nullopt;
         Meld m;
         for (const auto card : cards) {
-            if (card >= get_hand_size()) return false;
+            if (card >= get_hand_size()) return;
 
             m.add_card(m_hand.get_card(card));
         }
 
         if (m.size() >= 3) {
             if (m.get_meld_type() != INVALID) {
-
+                mo_ToPlay = m;
             }
-            return false;
+        } else {
+            for (const auto& meld : gs->melds) {
+                if (m.try_build_from(meld.get())) {
+                    mo_ToPlay = m;
+                }
+            }
         }
-
-        return true;
     }
 
-    shared_ptr<clients::Player> nn_player::clone() const {
-        return make_shared<nn_player>(*this);
+    void NNPlayer::add_to_working_meld(const shared_ptr<Card>& card) {
+        for (int i = 0; i < m_hand.size(); i++) {
+            if (m_hand.get_card(i) == card) {
+                m_WorkingMeld.add_card(card);
+                m_hand.remove_at(i);
+            }
+        }
+    }
+
+    shared_ptr<clients::Player> NNPlayer::clone() const {
+        return make_shared<NNPlayer>(*this);
     }
 } // rummy::nn

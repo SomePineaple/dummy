@@ -9,6 +9,7 @@ add_subdirectory(deps/boostorg/boost)
 
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 set(USE_IMAGE_API OFF)
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 add_subdirectory(deps/tiny-dnn)
 
 add_library(dummy_backend src/game/cards.cpp

@@ -7,7 +7,7 @@
 #include "../game/game.h"
 
 namespace rummy::nn {
-    nn_logic::nn_logic(const network<sequential>& e, const network<sequential>& n) : embedder(e), net(n) {
+    NNLogic::NNLogic(const network<sequential>& e, const network<sequential>& n) : embedder(e), net(n) {
         if (embedder.in_data_size() != 17 || embedder.out_data_size() != CARD_EMBEDDING_SIZE) {
             throw std::runtime_error("Wrong embedder network size");
         }
@@ -17,7 +17,7 @@ namespace rummy::nn {
         }
     }
 
-    vec_t nn_logic::get_card_embedding(const Card& c) {
+    vec_t NNLogic::get_card_embedding(const Card& c) {
         const auto embedding_iterator = embeddings.find(c.get_sort_value());
         if (embedding_iterator == embeddings.end()) {
             auto embedded = embedder.predict(c.one_hot());
@@ -28,11 +28,11 @@ namespace rummy::nn {
         return embedding_iterator->second;
     }
 
-    void nn_logic::init_gs(const GameState *gs) {
-        std::array<float, CARD_EMBEDDING_SIZE> padding{};
+    void NNLogic::init_gs(const GameState *gs) {
+        array<float, CARD_EMBEDDING_SIZE> padding{};
         padding.fill(0);
 
-        std::vector<float> net_in;
+        vector<float> net_in;
         // Normalize to -1 -> 1 scale
         net_in.push_back(static_cast<float>(gs->stockPile.size()) / 12.5f - 1.0f);
         net_in.push_back(2.0f * static_cast<float>(gs->opponent->get_hand_size()) / MAX_HAND_SIZE - 1.0f);
@@ -73,31 +73,32 @@ namespace rummy::nn {
         net_output = net.predict(net_in);
     }
 
-    uint8_t nn_logic::get_draw() const {
+    uint8_t NNLogic::get_draw() const {
         if (net_output.size() != NET_OUTPUT_SIZE) {
-            throw std::runtime_error("Network output has not been initialized");
+            throw runtime_error("Network output has not been initialized");
         }
 
         // We take the most probable prediction of the first 26 elements, where 0 is draw from stock, and any other is draw from discard at that index
-        const auto largest_location = std::max_element(net_output.begin(), net_output.begin() + MAX_DISCARD_SIZE + 1);
+        const auto largest_location = max_element(net_output.begin(), net_output.begin() + MAX_DISCARD_SIZE + 1);
         return largest_location - net_output.begin();
     }
 
-    std::vector<uint8_t> nn_logic::get_play_cards() const {
+    vector<uint8_t> NNLogic::get_play_cards() const {
         if (net_output.size() != NET_OUTPUT_SIZE) {
-            throw std::runtime_error("Network output has not been initialized");
+            throw runtime_error("Network output has not been initialized");
         }
 
-        std::vector<std::tuple<float, uint8_t>> card_outputs;
+        vector<tuple<float, uint8_t>> card_outputs;
         for (int i = PLAY_OFFSET; i < DISCARD_OFFSET; i++) {
             if (net_output[i] > PLAY_ACTIVATION_FLOOR)
                 card_outputs.emplace_back(net_output[i], i - PLAY_OFFSET);
         }
-        std::partial_sort(card_outputs.begin(), card_outputs.begin() + 3, card_outputs.end(), [](const auto& a, const auto& b) {
+
+        partial_sort(card_outputs.begin(), card_outputs.begin() + 3, card_outputs.end(), [](const auto& a, const auto& b) {
             return get<0>(a) > get<0>(b);
         });
 
-        std::vector<uint8_t> play_cards;
+        vector<uint8_t> play_cards;
         for (int i = 0; i < min(card_outputs.size(), static_cast<size_t>(3)); i++) {
             play_cards.push_back(get<1>(card_outputs[i]));
         }
@@ -105,13 +106,13 @@ namespace rummy::nn {
         return play_cards;
     }
 
-    uint8_t nn_logic::get_discard() const {
+    uint8_t NNLogic::get_discard() const {
         if (net_output.size() != NET_OUTPUT_SIZE) {
-            throw std::runtime_error("Network output has not been initialized");
+            throw runtime_error("Network output has not been initialized");
         }
 
         // Location of discard output with the highest activation
-        const auto largest_location = std::max_element(net_output.begin() + DISCARD_OFFSET, net_output.end());
+        const auto largest_location = max_element(net_output.begin() + DISCARD_OFFSET, net_output.end());
         return largest_location - (net_output.begin() + DISCARD_OFFSET);
     }
 } // rummy::clients
