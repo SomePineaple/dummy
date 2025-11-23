@@ -130,7 +130,7 @@ namespace rummy::clients {
     }
 
     void SignalPlayer::send_user_message(const string& message) const {
-        int messageId = randomInt();
+        int messageId = rand_int();
         json req = {
             {"jsonrpc", "2.0"},
             {"method", "send"},

@@ -16,7 +16,7 @@ using namespace tiny_dnn;
 using Net = tiny_dnn::network<tiny_dnn::sequential>;
 using Logic = shared_ptr<rummy::nn::NNLogic>;
 
-constexpr int GENERATION_SIZE = 10;
+constexpr int GENERATION_SIZE = 20;
 constexpr int BAD_MOVE_REWARD = -2;
 
 void create_init_generation(vector<Logic>& generation) {
@@ -79,43 +79,26 @@ int test_networks(const Logic& a, const Logic& b) {
 }
 
 void test_generation(const vector<Logic>& generation, vector<tuple<Logic, int>>& scoring) {
-    mutex mutexesMutex;
     mutex scoringMutex;
-    vector<mutex> logicMutexes(generation.size());
     vector<thread> threads;
 
     // Test every network against every other network twice
     for (int i = 0; i < generation.size(); i++) {
-        threads.emplace_back([&mutexesMutex, &logicMutexes, &scoringMutex, &scoring, &generation, i] {
+        threads.emplace_back([&scoringMutex, &scoring, &generation, i] {
             int score = 0;
             cout << "Testing number: " << i << " ..." << endl;
             for (int f = i; f < i +generation.size(); f++) {
                 const uint64_t j = f % generation.size();
                 if (i == j) continue;
 
-                mutexesMutex.lock();
-                logicMutexes.at(i).lock();
-                logicMutexes.at(j).lock();
-                mutexesMutex.unlock();
-
                 Logic a{generation[i]};
                 Logic b{generation[j]};
 
-                mutexesMutex.lock();
-                logicMutexes.at(i).unlock();
-                logicMutexes.at(j).unlock();
-                mutexesMutex.unlock();
-
-                cout << "Testing number " << i << " against number " << j << endl;
                 score += test_networks(a, b);
-                cout << "Finished testing " << i << " vs " << j << endl;
             }
             cout << "Number " << i << " scored " << score << endl;
 
             lock_guard scoringLock(scoringMutex);
-            mutexesMutex.lock();
-            lock_guard genLock(logicMutexes.at(i));
-            mutexesMutex.unlock();
             scoring.emplace_back(generation[i], score);
         });
     }
