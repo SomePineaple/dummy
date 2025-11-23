@@ -25,15 +25,16 @@ namespace rummy::nn {
         static constexpr uint16_t PLAY_OFFSET = 26;
         static constexpr float PLAY_ACTIVATION_FLOOR = 0.7;
 
-        network<sequential> embedder;
-        network<sequential> net;
-        // the key is going to be the sort_value of the cards.
+        network<sequential> m_embedder;
+        network<sequential> m_actor;
+        // the key is the sort value of the cards.
         std::unordered_map<uint8_t, vec_t> embeddings{};
         vec_t net_output;
 
         vec_t get_card_embedding(const Card& c);
     public:
         NNLogic(const network<sequential>& e, const network<sequential>& n);
+        NNLogic(const NNLogic& mutateFrom, float mutationStrength, float mutationChance);
         void init_gs(const GameState* gs);
         // returns 0 to draw from stock, and anything more is how many to draw from discard.
         uint8_t get_draw() const;

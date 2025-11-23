@@ -5,46 +5,52 @@
 #include <iostream>
 #include <tiny_dnn/tiny_dnn.h>
 
-#include "game/game.h"
 #include "nn/nn_logic.h"
 #include "nn/nn_player.h"
 
 using namespace std;
+using namespace tiny_dnn;
+using Net = tiny_dnn::network<tiny_dnn::sequential>;
+using Networks = array<shared_ptr<Net>, 2>;
+
+constexpr int GENERATION_SIZE = 100;
+
+void create_init_generation(vector<Networks>& generation) {
+    for (int i = 0; i < GENERATION_SIZE; i++) {
+        Networks nets{make_shared<Net>(), make_shared<Net>()};
+        (*nets[0]) << layers::fc(17, 32)
+                << activation::tanh()
+                << layers::fc(32, 32)
+                << activation::tanh()
+                << layers::fc(32, rummy::nn::CARD_EMBEDDING_SIZE);
+
+        nets[0]->weight_init(weight_init::gaussian(2.0f));
+        nets[0]->bias_init(weight_init::gaussian(2.0f));
+
+        (*nets[1]) << layers::fc(rummy::nn::NET_INPUT_SIZE, 2400)
+                  << activation::tanh()
+                  << layers::fc(2400, 2400)
+                  << activation::tanh()
+                  << layers::fc(2400, rummy::nn::NET_OUTPUT_SIZE)
+                  << activation::sigmoid();
+
+        nets[1]->weight_init(weight_init::gaussian(2.0f));
+        nets[1]->bias_init(weight_init::gaussian(2.0f));
+
+        generation.push_back(nets);
+    }
+}
+
+void test_generation(const vector<Networks>& generation, vector<tuple<Networks, int>>& scoring) {
+
+}
 
 int main() {
-    tiny_dnn::network<tiny_dnn::sequential> embedder;
+    vector<Networks> networks;
+    cout << "Creating initial generation..." << endl;
+    create_init_generation(networks);
+    cout << "done" << endl;
 
-    cout << "Building networks..." << endl;
-    embedder << tiny_dnn::layers::fc(17, 32)
-        << tiny_dnn::activation::tanh()
-        << tiny_dnn::layers::fc(32, 32)
-        << tiny_dnn::activation::tanh()
-        << tiny_dnn::layers::fc(32, rummy::nn::CARD_EMBEDDING_SIZE);
-
-    embedder.init_weight();
-    embedder.bias_init(tiny_dnn::weight_init::xavier());
-
-    tiny_dnn::network<tiny_dnn::sequential> actor;
-
-    actor << tiny_dnn::layers::fc(rummy::nn::NET_INPUT_SIZE, 2400)
-          << tiny_dnn::activation::tanh()
-          << tiny_dnn::layers::fc(2400, 2400)
-          << tiny_dnn::activation::tanh()
-          << tiny_dnn::layers::fc(2400, rummy::nn::NET_OUTPUT_SIZE)
-          << tiny_dnn::activation::sigmoid();
-    actor.init_weight();
-    actor.bias_init(tiny_dnn::weight_init::xavier());
-
-    cout << "done." << endl;
-
-    const rummy::GameState gs{make_shared<rummy::nn::NNPlayer>(embedder, actor), make_shared<rummy::nn::NNPlayer>(embedder, actor)};
-
-    cout << "creating logic and initializing game state..." << endl;
-    rummy::nn::NNLogic logic{embedder, actor};
-    logic.init_gs(&gs);
-    cout << "done" << std::endl;
-
-    cout << "we should draw number: " << static_cast<int>(logic.get_draw()) << " and discard number " << static_cast<int>(logic.get_discard()) << endl;
 
     return 0;
 }

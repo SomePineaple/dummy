@@ -7,20 +7,61 @@
 #include "../game/game.h"
 
 namespace rummy::nn {
-    NNLogic::NNLogic(const network<sequential>& e, const network<sequential>& n) : embedder(e), net(n) {
-        if (embedder.in_data_size() != 17 || embedder.out_data_size() != CARD_EMBEDDING_SIZE) {
-            throw std::runtime_error("Wrong embedder network size");
+    NNLogic::NNLogic(const NNLogic& mutateFrom, const float mutationStrength, const float mutationChance) {
+        stringstream ss;
+        ss << mutateFrom.m_embedder;
+        ss >> m_embedder;
+
+        ss.clear();
+
+        ss << mutateFrom.m_actor;
+        ss >> m_actor;
+
+        static std::mt19937 rng(std::random_device{}());
+        normal_distribution<float> dist(0.0f, mutationStrength);
+        uniform_real_distribution<float> chance(0.0f, 1.0f);
+
+        // Randomly mutate weights in embedder
+        for (int i = 0; i < m_embedder.depth(); ++i) {
+            vector<vec_t*> layerParams = m_embedder[i]->weights();
+            for (auto* paramVec : layerParams) {
+                for (float& val : *paramVec) {
+                    if (chance(rng) < mutationChance) {
+                        val += dist(rng);
+                        val = min(max(-30.0f, val), 30.0f);
+                    }
+                }
+            }
         }
 
-        if (net.in_data_size() != NET_INPUT_SIZE || net.out_data_size() != NET_OUTPUT_SIZE) {
-            throw std::runtime_error("Wrong main network dimensions");
+        // Randomly mutate weights in network
+        for (int i = 0; i < m_actor.depth(); ++i) {
+            vector<vec_t*> layerParams = m_actor[i]->weights();
+            for (auto* paramVec : layerParams) {
+                for (float& val : *paramVec) {
+                    if (chance(rng) < mutationChance) {
+                        val += dist(rng);
+                        val = min(max(-30.0f, val), 30.0f);
+                    }
+                }
+            }
+        }
+    }
+
+    NNLogic::NNLogic(const network<sequential>& e, const network<sequential>& n) : m_embedder(e), m_actor(n) {
+        if (m_embedder.in_data_size() != 17 || m_embedder.out_data_size() != CARD_EMBEDDING_SIZE) {
+            throw runtime_error("Wrong embedder network size");
+        }
+
+        if (m_actor.in_data_size() != NET_INPUT_SIZE || m_actor.out_data_size() != NET_OUTPUT_SIZE) {
+            throw runtime_error("Wrong main network dimensions");
         }
     }
 
     vec_t NNLogic::get_card_embedding(const Card& c) {
         const auto embedding_iterator = embeddings.find(c.get_sort_value());
         if (embedding_iterator == embeddings.end()) {
-            auto embedded = embedder.predict(c.one_hot());
+            auto embedded = m_embedder.predict(c.one_hot());
             embeddings[c.get_sort_value()] = embedded;
             return embedded;
         }
@@ -70,7 +111,7 @@ namespace rummy::nn {
         }
 
         // Finally run network
-        net_output = net.predict(net_in);
+        net_output = m_actor.predict(net_in);
     }
 
     uint8_t NNLogic::get_draw() const {

@@ -6,16 +6,16 @@
 
 namespace rummy::nn {
     bool NNPlayer::run_turn(GameState *gs) {
-        mp_logic->init_gs(gs);
-        if (const auto draw = mp_logic->get_draw(); draw == 0) {
+        msp_logic->init_gs(gs);
+        if (const auto draw = msp_logic->get_draw(); draw == 0) {
             draw_from_stock(gs, 1);
         } else {
             if (!draw_from_discard(gs, draw)) return false;
         }
 
-        try_play_cards(mp_logic->get_play_cards(), gs);
+        try_play_cards(msp_logic->get_play_cards(), gs);
 
-        const uint8_t discardIndex = mp_logic->get_discard();
+        const uint8_t discardIndex = msp_logic->get_discard();
         if (discardIndex >= m_hand.size()) {
             return false;
         }
@@ -23,8 +23,8 @@ namespace rummy::nn {
         // Save the card we want to discard, because the index will shift after we play cards.
         const auto toDiscard = m_hand.get_card(discardIndex);
 
-        if (mo_ToPlay != nullopt) {
-            for (const auto& card : mo_ToPlay->get_cards()) {
+        if (mopt_ToPlay != nullopt) {
+            for (const auto& card : mopt_ToPlay->get_cards()) {
                 add_to_working_meld(card);
             }
 
@@ -40,7 +40,7 @@ namespace rummy::nn {
     }
 
     void NNPlayer::try_play_cards(const vector<uint8_t>& cards, const GameState* gs) {
-        mo_ToPlay = nullopt;
+        mopt_ToPlay = nullopt;
         Meld m;
         for (const auto card : cards) {
             if (card >= get_hand_size()) return;
@@ -50,12 +50,12 @@ namespace rummy::nn {
 
         if (m.size() >= 3) {
             if (m.get_meld_type() != INVALID) {
-                mo_ToPlay = m;
+                mopt_ToPlay = m;
             }
         } else {
             for (const auto& meld : gs->melds) {
                 if (m.try_build_from(meld.get())) {
-                    mo_ToPlay = m;
+                    mopt_ToPlay = m;
                 }
             }
         }
