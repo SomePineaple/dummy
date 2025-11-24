@@ -7,7 +7,7 @@
 #include <memory>
 #include <random>
 #include <algorithm>
-#include <array>
+#include "../nn/nn_logic.h"
 
 namespace rummy {
     bool cmp_cards(const std::shared_ptr<Card>& c1, const std::shared_ptr<Card>& c2) {
@@ -70,11 +70,13 @@ namespace rummy {
         }
     }
 
-    std::array<float, 17> Card::one_hot() const {
-        std::array<float, 17> v{};
-        v.fill(0);
-        v[suit] = 1;
-        v[3 + value] = 1;
+    nn::card_input_t Card::one_hot() const {
+        nn::card_input_t v{};
+
+        v = 0;
+
+        v(0, suit) = 1;
+        v(0, 3 + value) = 1;
 
         return v;
     }

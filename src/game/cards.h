@@ -8,6 +8,8 @@
 #include <vector>
 #include <cstdint>
 
+#include <dlib/matrix.h>
+
 namespace rummy {
     using namespace std;
     enum Suit {
@@ -21,7 +23,7 @@ namespace rummy {
         [[nodiscard]] uint16_t get_point_value() const;
         [[nodiscard]] uint8_t get_sort_value() const;
         [[nodiscard]] string to_string() const;
-        [[nodiscard]] std::array<float, 17> one_hot() const;
+        [[nodiscard]] dlib::matrix<float, 1, 17> one_hot() const;
     };
 
     class Pile {

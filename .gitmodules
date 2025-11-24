@@ -4,6 +4,6 @@
 [submodule "deps/boostorg/boost"]
 	path = deps/boostorg/boost
 	url = https://github.com/boostorg/boost.git
-[submodule "deps/tiny-dnn"]
-	path = deps/tiny-dnn
-	url = https://github.com/tiny-dnn/tiny-dnn.git
+[submodule "deps/davisking/dlib"]
+	path = deps/davisking/dlib
+	url = git@github.com:davisking/dlib.git

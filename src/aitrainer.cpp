@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include <memory>
-#include <tiny_dnn/tiny_dnn.h>
 #include <thread>
 #include <mutex>
 
@@ -12,11 +11,10 @@
 #include "nn/nn_player.h"
 
 using namespace std;
-using namespace tiny_dnn;
-using Net = tiny_dnn::network<tiny_dnn::sequential>;
-using Logic = shared_ptr<rummy::nn::NNLogic>;
+namespace rn = rummy::nn;
+using Logic = shared_ptr<rn::NNLogic>;
 
-constexpr int GENERATION_SIZE = 20;
+constexpr int GENERATION_SIZE = 100;
 constexpr int BAD_MOVE_REWARD = -2;
 
 void create_init_generation(vector<Logic>& generation) {
@@ -25,29 +23,9 @@ void create_init_generation(vector<Logic>& generation) {
 
     for (int i = 0; i < GENERATION_SIZE; i++) {
         threads.emplace_back([&generation, &generationLock] {
-            auto embedder = make_shared<Net>();
-            (*embedder) << layers::fc(17, 32)
-                    << activation::tanh()
-                    << layers::fc(32, 32)
-                    << activation::tanh()
-                    << layers::fc(32, rummy::nn::CARD_EMBEDDING_SIZE);
-
-            embedder->weight_init(weight_init::gaussian(2.0f));
-            embedder->bias_init(weight_init::gaussian(2.0f));
-
-            auto actor = make_shared<Net>();
-            (*actor) << layers::fc(rummy::nn::NET_INPUT_SIZE, 2400)
-                      << activation::tanh()
-                      << layers::fc(2400, 2400)
-                      << activation::tanh()
-                      << layers::fc(2400, rummy::nn::NET_OUTPUT_SIZE)
-                      << activation::sigmoid();
-
-            actor->weight_init(weight_init::gaussian(2.0f));
-            actor->bias_init(weight_init::gaussian(2.0f));
-
+            const auto l = make_shared<rn::NNLogic>();
             lock_guard lock(generationLock);
-            generation.push_back(make_shared<rummy::nn::NNLogic>(embedder, actor));
+            generation.push_back(l);
         });
     }
 
@@ -57,8 +35,8 @@ void create_init_generation(vector<Logic>& generation) {
 int test_networks(const Logic& a, const Logic& b) {
     int score = 0;
 
-    auto p1 = make_shared<rummy::nn::NNPlayer>(a);
-    auto p2 = make_shared<rummy::nn::NNPlayer>(b);
+    auto p1 = make_shared<rn::NNPlayer>(a);
+    auto p2 = make_shared<rn::NNPlayer>(b);
 
     auto gs = std::make_unique<rummy::GameState>(p1, p2);
 
@@ -68,7 +46,7 @@ int test_networks(const Logic& a, const Logic& b) {
         auto backupGs = std::make_unique<rummy::GameState>(gs.get());
         if (!gs->player->run_turn(gs.get())) {
             swap(gs, backupGs);
-            static_pointer_cast<rummy::nn::NNPlayer>(gs->player)->random_turn(gs.get());
+            static_pointer_cast<rn::NNPlayer>(gs->player)->random_turn(gs.get());
             score += BAD_MOVE_REWARD;
         }
         swap(gs->player, gs->opponent);
@@ -87,12 +65,15 @@ void test_generation(const vector<Logic>& generation, vector<tuple<Logic, int>>&
         threads.emplace_back([&scoringMutex, &scoring, &generation, i] {
             int score = 0;
             cout << "Testing number: " << i << " ..." << endl;
+
+            // Clone NNLogic to avoid memory races.
+            const auto a = make_shared<rn::NNLogic>(*generation[i]);
             for (int f = i; f < i +generation.size(); f++) {
                 const uint64_t j = f % generation.size();
                 if (i == j) continue;
 
-                Logic a{generation[i]};
-                Logic b{generation[j]};
+                // Clone the NNLogic to avoid memory races.
+                auto b = make_shared<rn::NNLogic>(*generation[j]);
 
                 score += test_networks(a, b);
             }
@@ -106,15 +87,41 @@ void test_generation(const vector<Logic>& generation, vector<tuple<Logic, int>>&
     for_each(threads.begin(), threads.end(), [](auto& thread) {thread.join();});
 }
 
-int main() {
+void sim_generations(const uint16_t numGenerations, const uint16_t keepTop, const uint16_t introduceNew, const float mutationChance, const float mutationStrength) {
     vector<Logic> networks;
     cout << "Creating initial generation..." << endl;
     create_init_generation(networks);
     cout << "done" << endl;
-    vector<tuple<Logic, int>> scoring;
-    cout << "Testing..." << endl;
-    test_generation(networks, scoring);
-    cout << "Done testing" << endl;
+    for (int i = 0; i < numGenerations; i++) {
+        vector<tuple<Logic, int>> scoring;
+        cout << "Testing generation " << i << "..." << endl;
+        test_generation(networks, scoring);
+        cout << "Done testing" << endl;
+        partial_sort(scoring.begin(), scoring.begin() + keepTop, scoring.end(), [](const auto& a, const auto& b) {
+            return get<1>(a) > get<1>(b);
+        });
 
+        // Now we evolve
+        networks.clear();
+        for (int j = 0; j < keepTop; j++) {
+            get<0>(scoring[j])->write_to_file("net_" + to_string(j));
+            const uint16_t numChildren = (GENERATION_SIZE - introduceNew) / keepTop - 1;
+            cout << "Now evolving net number " << j << " who scored " << get<1>(scoring[j]) << endl;
+            for (int k = 0; k < numChildren; k++) {
+                networks.push_back(make_shared<rummy::nn::NNLogic>(*get<0>(scoring[j]), mutationStrength, mutationChance));
+            }
+
+            networks.push_back(get<0>(scoring[j]));
+        }
+
+        // Add some new completely random nets
+        for (uint64_t j = networks.size(); j < GENERATION_SIZE; j++) {
+            networks.push_back(make_shared<rn::NNLogic>());
+        }
+    }
+}
+
+int main() {
+    sim_generations(5, 10, 10, 0.4, 0.05);
     return 0;
 }

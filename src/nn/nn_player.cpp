@@ -4,6 +4,8 @@
 
 #include "nn_player.h"
 
+#include <random>
+
 namespace rummy::nn {
     bool NNPlayer::run_turn(GameState *gs) {
         msp_logic->init_gs(gs);
@@ -39,7 +41,7 @@ namespace rummy::nn {
         return false;
     }
 
-    void NNPlayer::try_play_cards(const vector<uint8_t>& cards, const GameState* gs) {
+    void NNPlayer::try_play_cards(const std::vector<uint8_t>& cards, const GameState* gs) {
         mopt_ToPlay = nullopt;
         Meld m;
         for (const auto card : cards) {

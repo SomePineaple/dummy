@@ -4,6 +4,8 @@
 
 #ifndef DUMMY_GAME_H
 #define DUMMY_GAME_H
+
+#include "meld.h"
 #include "player.h"
 
 namespace rummy {

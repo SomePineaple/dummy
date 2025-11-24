@@ -7,10 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(deps/njhomann/json)
 add_subdirectory(deps/boostorg/boost)
 
-set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
-set(USE_IMAGE_API OFF)
-set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-add_subdirectory(deps/tiny-dnn)
+add_subdirectory(deps/davisking/dlib)
 
 add_library(dummy_backend src/game/cards.cpp
         src/game/cards.h
@@ -22,13 +19,14 @@ add_library(dummy_backend src/game/cards.cpp
         src/game/game.h
         src/game/console_player.cpp
         src/game/console_player.h
+        src/nn/dlib_helper.h
         src/nn/nn_logic.cpp
         src/nn/nn_logic.h
         src/nn/nn_player.cpp
         src/nn/nn_player.h)
 
-target_link_libraries(dummy_backend PRIVATE boost_format)
-target_include_directories(dummy_backend PRIVATE deps/boostorg/format/include deps/tiny-dnn)
+target_link_libraries(dummy_backend PRIVATE boost_format dlib::dlib)
+target_include_directories(dummy_backend PRIVATE deps/boostorg/format/include PUBLIC deps/davisking/dlib/)
 
 add_executable(signal-client src/signalclient.cpp
         src/signalbot/signal_player.cpp
@@ -42,5 +40,5 @@ add_executable(console-client src/consoleclient.cpp)
 target_link_libraries(console-client PRIVATE dummy_backend)
 
 add_executable(ai-trainer src/aitrainer.cpp)
-target_include_directories(ai-trainer PRIVATE deps/tiny-dnn)
-target_link_libraries(ai-trainer PRIVATE dummy_backend)
+target_include_directories(ai-trainer PRIVATE deps/davisking/dlib)
+target_link_libraries(ai-trainer PRIVATE dummy_backend dlib::dlib)
