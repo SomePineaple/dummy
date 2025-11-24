@@ -10,30 +10,38 @@
 
 namespace rummy::nn {
     // If no parameters are passed in, we initialize everything with random distribution
-    NNLogic::NNLogic() {
+    NNLogic::NNLogic(const float mutationRate) {
         msp_embedder = make_shared<embedder_t>();
         msp_actor = make_shared<actor_t>();
+        m_mutationRate = mutationRate;
 
         nn_helper::initialize_network_gaussian(*msp_embedder, 0.0f, 2.0f);
         nn_helper::initialize_network_gaussian(*msp_actor, 0.0f, 2.0f);
     }
 
     NNLogic::NNLogic(const NNLogic& from) {
+        m_mutationRate = from.m_mutationRate;
+
         // Deep copy the networks
         msp_embedder = make_shared<embedder_t>(*from.msp_embedder);
         msp_actor = make_shared<actor_t>(*from.msp_actor);
     }
 
-    NNLogic::NNLogic(const NNLogic& mutateFrom, const float mutationStrength, const float mutationChance) {
+    NNLogic::NNLogic(const NNLogic& mutateFrom, const float mutationChance) {
+        dlib::rand rnd;
+
+        // Use σ′=σ⋅exp(τz) to update the mutation rate.
+        m_mutationRate = clamp(mutateFrom.m_mutationRate * exp(LEARNING_RATE * rnd.get_random_float()), 0.001f, 0.1f);
+
         msp_embedder = make_shared<embedder_t>(*mutateFrom.msp_embedder);
         msp_actor = make_shared<actor_t>(*mutateFrom.msp_actor);
 
-        nn_helper::mutate_network(*msp_embedder, mutationStrength, mutationChance);
-        nn_helper::mutate_network(*msp_actor, mutationStrength, mutationChance);
+        nn_helper::mutate_network(*msp_embedder, m_mutationRate, mutationChance);
+        nn_helper::mutate_network(*msp_actor, m_mutationRate, mutationChance);
     }
 
     NNLogic::NNLogic(const shared_ptr<embedder_t>& e, const shared_ptr<actor_t>& n) : msp_embedder(e), msp_actor(n) {
-
+        m_mutationRate = 0.01;
     }
 
     embed_output_t NNLogic::get_card_embedding(const Card& c) {
@@ -103,23 +111,23 @@ namespace rummy::nn {
         net_output = trans((*msp_actor)(x));
     }
 
-    uint8_t NNLogic::get_draw() const {
+    uint8_t NNLogic::get_draw(const uint8_t discardSize) const {
         if (net_output.size() != NET_OUTPUT_SIZE) {
             throw runtime_error("Network output has not been initialized");
         }
 
         // We take the most probable prediction of the first 26 elements, where 0 is draw from stock, and any other is draw from discard at that index
-        const auto largest_location = max_element(net_output.begin(), net_output.begin() + MAX_DISCARD_SIZE + 1);
+        const auto largest_location = max_element(net_output.begin(), net_output.begin() + discardSize + 1);
         return largest_location - net_output.begin();
     }
 
-    std::vector<uint8_t> NNLogic::get_play_cards() const {
+    std::vector<uint8_t> NNLogic::get_play_cards(const uint8_t handSize) const {
         if (net_output.size() != NET_OUTPUT_SIZE) {
             throw runtime_error("Network output has not been initialized");
         }
 
         std::vector<tuple<float, uint8_t>> card_outputs;
-        for (int i = PLAY_OFFSET; i < DISCARD_OFFSET; i++) {
+        for (int i = PLAY_OFFSET; i < PLAY_OFFSET + handSize; i++) {
             if (net_output(0, i) > PLAY_ACTIVATION_FLOOR)
                 card_outputs.emplace_back(net_output(0, i), i - PLAY_OFFSET);
         }
@@ -138,13 +146,13 @@ namespace rummy::nn {
         return play_cards;
     }
 
-    uint8_t NNLogic::get_discard() const {
+    uint8_t NNLogic::get_discard(const uint16_t handSize) const {
         if (net_output.size() != NET_OUTPUT_SIZE) {
             throw runtime_error("Network output has not been initialized");
         }
 
         // Location of discard output with the highest activation
-        const auto largest_location = max_element(net_output.begin() + DISCARD_OFFSET, net_output.end());
+        const auto largest_location = max_element(net_output.begin() + DISCARD_OFFSET, net_output.begin() + min(static_cast<int>(NET_OUTPUT_SIZE), DISCARD_OFFSET + handSize));
         return largest_location - (net_output.begin() + DISCARD_OFFSET);
     }
 

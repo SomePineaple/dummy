@@ -17,13 +17,14 @@ using Logic = shared_ptr<rn::NNLogic>;
 constexpr int GENERATION_SIZE = 100;
 constexpr int BAD_MOVE_REWARD = -2;
 
-void create_init_generation(vector<Logic>& generation) {
+void create_init_generation(vector<Logic>& generation, const float mutationStrength) {
     vector<thread> threads;
     mutex generationLock;
 
     for (int i = 0; i < GENERATION_SIZE; i++) {
-        threads.emplace_back([&generation, &generationLock] {
-            const auto l = make_shared<rn::NNLogic>();
+        threads.emplace_back([&generation, &generationLock, mutationStrength] {
+            // Begin with a mutation rate of 0.01
+            const auto l = make_shared<rn::NNLogic>(mutationStrength);
             lock_guard lock(generationLock);
             generation.push_back(l);
         });
@@ -64,8 +65,6 @@ void test_generation(const vector<Logic>& generation, vector<tuple<Logic, int>>&
     for (int i = 0; i < generation.size(); i++) {
         threads.emplace_back([&scoringMutex, &scoring, &generation, i] {
             int score = 0;
-            cout << "Testing number: " << i << " ..." << endl;
-
             // Clone NNLogic to avoid memory races.
             const auto a = make_shared<rn::NNLogic>(*generation[i]);
             for (int f = i; f < i +generation.size(); f++) {
@@ -77,7 +76,6 @@ void test_generation(const vector<Logic>& generation, vector<tuple<Logic, int>>&
 
                 score += test_networks(a, b);
             }
-            cout << "Number " << i << " scored " << score << endl;
 
             lock_guard scoringLock(scoringMutex);
             scoring.emplace_back(generation[i], score);
@@ -90,7 +88,7 @@ void test_generation(const vector<Logic>& generation, vector<tuple<Logic, int>>&
 void sim_generations(const uint16_t numGenerations, const uint16_t keepTop, const uint16_t introduceNew, const float mutationChance, const float mutationStrength) {
     vector<Logic> networks;
     cout << "Creating initial generation..." << endl;
-    create_init_generation(networks);
+    create_init_generation(networks, mutationStrength);
     cout << "done" << endl;
     for (int i = 0; i < numGenerations; i++) {
         vector<tuple<Logic, int>> scoring;
@@ -108,7 +106,7 @@ void sim_generations(const uint16_t numGenerations, const uint16_t keepTop, cons
             const uint16_t numChildren = (GENERATION_SIZE - introduceNew) / keepTop - 1;
             cout << "Now evolving net number " << j << " who scored " << get<1>(scoring[j]) << endl;
             for (int k = 0; k < numChildren; k++) {
-                networks.push_back(make_shared<rummy::nn::NNLogic>(*get<0>(scoring[j]), mutationStrength, mutationChance));
+                networks.push_back(make_shared<rummy::nn::NNLogic>(*get<0>(scoring[j]), mutationChance));
             }
 
             networks.push_back(get<0>(scoring[j]));
@@ -116,12 +114,12 @@ void sim_generations(const uint16_t numGenerations, const uint16_t keepTop, cons
 
         // Add some new completely random nets
         for (uint64_t j = networks.size(); j < GENERATION_SIZE; j++) {
-            networks.push_back(make_shared<rn::NNLogic>());
+            networks.push_back(make_shared<rn::NNLogic>(mutationStrength));
         }
     }
 }
 
 int main() {
-    sim_generations(5, 10, 10, 0.4, 0.05);
+    sim_generations(20, 10, 10, 1, 0.01);
     return 0;
 }

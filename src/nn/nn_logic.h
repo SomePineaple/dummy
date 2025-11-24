@@ -12,6 +12,8 @@
 namespace rummy::nn {
     using namespace dlib;
 
+    constexpr size_t HIDDEN_LAYER_SIZE = 512;
+
     constexpr uint16_t CARD_EMBEDDING_SIZE = 16;
     // 0:draw stock, 1-25: Draw discard, 26-46: cards to play, 47-67: card to discard
     constexpr uint16_t NET_OUTPUT_SIZE = 68;
@@ -30,8 +32,8 @@ namespace rummy::nn {
 
     using actor_t = loss_metric<
         fc<NET_OUTPUT_SIZE,
-        htan<fc<2400,
-        htan<fc<2400,
+        htan<fc<HIDDEN_LAYER_SIZE,
+        htan<fc<HIDDEN_LAYER_SIZE,
         input<matrix<float, 1, NET_INPUT_SIZE
     >>>>>>>>;
 
@@ -42,6 +44,9 @@ namespace rummy::nn {
     using net_input_t = matrix<float, 1, NET_INPUT_SIZE>;
 
     class NNLogic {
+        // Learning rate is 1 / sqrt(num parameters)
+        const float LEARNING_RATE = 1.0f / sqrt(NET_INPUT_SIZE*HIDDEN_LAYER_SIZE + 2*HIDDEN_LAYER_SIZE + HIDDEN_LAYER_SIZE*HIDDEN_LAYER_SIZE);
+
         static constexpr uint16_t DISCARD_OFFSET = 47;
         static constexpr uint16_t PLAY_OFFSET = 26;
         static constexpr float PLAY_ACTIVATION_FLOOR = 0.7;
@@ -52,17 +57,19 @@ namespace rummy::nn {
         std::unordered_map<uint8_t, embed_output_t> embeddings{};
         matrix<float, 1, NET_OUTPUT_SIZE> net_output;
 
+        float m_mutationRate;
+
         embed_output_t get_card_embedding(const Card& c);
     public:
-        NNLogic();
+        NNLogic(float mutationRate);
         NNLogic(const shared_ptr<embedder_t>& e, const shared_ptr<actor_t>& n);
-        NNLogic(const NNLogic& mutateFrom, float mutationStrength, float mutationChance);
+        NNLogic(const NNLogic& mutateFrom, float mutationChance);
         NNLogic(const NNLogic& from);
         void init_gs(const GameState* gs);
         // returns 0 to draw from stock, and anything more is how many to draw from discard.
-        uint8_t get_draw() const;
-        std::vector<uint8_t> get_play_cards() const;
-        uint8_t get_discard() const;
+        uint8_t get_draw(uint8_t discardSize) const;
+        std::vector<uint8_t> get_play_cards(uint8_t handSize) const;
+        uint8_t get_discard(uint16_t handSize) const;
         void write_to_file(const string& prefix) const;
     };
 } // rummy::nn

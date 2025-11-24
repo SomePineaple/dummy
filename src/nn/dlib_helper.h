@@ -9,6 +9,7 @@
 #include <random>
 
 namespace rummy::nn::nn_helper {
+    // Mostly written by gemini
     template <typename T, typename = void>
     struct has_layer_params : std::false_type {};
 
@@ -24,7 +25,7 @@ namespace rummy::nn::nn_helper {
             : rnd(r), mean(m), std_dev(s) {}
 
         template<typename T, typename U, typename E>
-        void operator()(const size_t idx, dlib::add_layer<T,U,E>& l) {
+        void operator()(const size_t _, add_layer<T,U,E>& l) {
             // We act on the internal details of the layer (the computational part)
             auto& details = l.layer_details();
 
@@ -34,7 +35,7 @@ namespace rummy::nn::nn_helper {
             if constexpr (has_layer_params<std::decay_t<decltype(details)>>::value)
             {
                 // Get reference to the parameter tensor (weights and biases)
-                dlib::tensor& params = details.get_layer_params();
+                tensor& params = details.get_layer_params();
 
                 // Access raw data pointer
                 auto* data = params.host();

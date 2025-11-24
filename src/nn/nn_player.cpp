@@ -9,15 +9,15 @@
 namespace rummy::nn {
     bool NNPlayer::run_turn(GameState *gs) {
         msp_logic->init_gs(gs);
-        if (const auto draw = msp_logic->get_draw(); draw == 0) {
+        if (const auto draw = msp_logic->get_draw(gs->discardPile.size()); draw == 0) {
             draw_from_stock(gs, 1);
         } else {
             if (!draw_from_discard(gs, draw)) return false;
         }
 
-        try_play_cards(msp_logic->get_play_cards(), gs);
+        try_play_cards(msp_logic->get_play_cards(get_hand_size()), gs);
 
-        const uint8_t discardIndex = msp_logic->get_discard();
+        const uint8_t discardIndex = msp_logic->get_discard(get_hand_size());
         if (discardIndex >= m_hand.size()) {
             return false;
         }
