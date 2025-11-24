@@ -9,13 +9,15 @@
 namespace rummy::nn {
     bool NNPlayer::run_turn(GameState *gs) {
         msp_logic->init_gs(gs);
+        const auto play_cards = msp_logic->get_play_cards(get_hand_size());
         if (const auto draw = msp_logic->get_draw(gs->discardPile.size()); draw == 0) {
             draw_from_stock(gs, 1);
+            try_play_cards(play_cards, gs);
         } else {
-            if (!draw_from_discard(gs, draw)) return false;
+            try_play_cards(play_cards, gs->discardPile.get_card(draw - 1), gs);
+            if (mopt_ToPlay != nullopt)
+                if (!draw_from_discard(gs, draw)) return false;
         }
-
-        try_play_cards(msp_logic->get_play_cards(get_hand_size()), gs);
 
         const uint8_t discardIndex = msp_logic->get_discard(get_hand_size());
         if (discardIndex >= m_hand.size()) {
@@ -63,6 +65,31 @@ namespace rummy::nn {
         }
     }
 
+    void NNPlayer::try_play_cards(const std::vector<uint8_t> &cards, const shared_ptr<Card>& fromDiscard, const GameState *gs) {
+        mopt_ToPlay = nullopt;
+        Meld m;
+        for (const auto card : cards) {
+            if (card >= get_hand_size()) return;
+
+            m.add_card(m_hand.get_card(card));
+        }
+
+        m.add_card(fromDiscard);
+
+        if (m.size() >= 3) {
+            if (m.get_meld_type() != INVALID) {
+                mopt_ToPlay = m;
+            }
+        } else {
+            for (const auto& meld : gs->melds) {
+                if (m.try_build_from(meld.get())) {
+                    mopt_ToPlay = m;
+                }
+            }
+        }
+    }
+
+
     void NNPlayer::add_to_working_meld(const shared_ptr<Card>& card) {
         for (int i = 0; i < m_hand.size(); i++) {
             if (m_hand.get_card(i) == card) {
@@ -77,7 +104,7 @@ namespace rummy::nn {
 
         // Discard a random card
         static std::mt19937 rng(std::random_device{}());
-        uniform_int_distribution<int> dist(0, m_hand.size() - 1);
+        uniform_int_distribution dist(0, m_hand.size() - 1);
 
         discard(gs, dist(rng));
     }

@@ -61,11 +61,13 @@ namespace rummy::nn {
 
         embed_output_t get_card_embedding(const Card& c);
     public:
-        NNLogic(float mutationRate);
+        explicit NNLogic(float mutationRate);
         NNLogic(const shared_ptr<embedder_t>& e, const shared_ptr<actor_t>& n);
         NNLogic(const NNLogic& mutateFrom, float mutationChance);
         NNLogic(const NNLogic& from);
+        NNLogic(const string& loadPath, float mutationRate);
         void init_gs(const GameState* gs);
+
         // returns 0 to draw from stock, and anything more is how many to draw from discard.
         uint8_t get_draw(uint8_t discardSize) const;
         std::vector<uint8_t> get_play_cards(uint8_t handSize) const;

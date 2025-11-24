@@ -9,6 +9,15 @@
 #include <random>
 
 namespace rummy::nn {
+    NNLogic::NNLogic(const string& loadPath, const float mutationRate) {
+        m_mutationRate = mutationRate;
+        msp_embedder = make_shared<embedder_t>();
+        msp_actor = make_shared<actor_t>();
+
+        deserialize(loadPath + "_embedder.bin") >> (*msp_embedder);
+        deserialize(loadPath + "_actor.bin") >> (*msp_actor);
+    }
+
     // If no parameters are passed in, we initialize everything with random distribution
     NNLogic::NNLogic(const float mutationRate) {
         msp_embedder = make_shared<embedder_t>();
@@ -157,6 +166,9 @@ namespace rummy::nn {
     }
 
     void NNLogic::write_to_file(const string& prefix) const {
+        msp_embedder->clean();
+        msp_actor->clean();
+
         serialize(prefix + "_embedder.bin") << (*msp_embedder);
         serialize(prefix + "_actor.bin") << (*msp_actor);
     }
