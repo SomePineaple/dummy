@@ -67,4 +67,15 @@ namespace rummy {
         m_BuildingFrom = nullptr;
         return false;
     }
+
+    std::vector<shared_ptr<Card>> Meld::get_cards() const {
+        std::vector<shared_ptr<Card>> cards;
+        if (m_BuildingFrom != nullptr) {
+            auto buildFromCards = m_BuildingFrom->get_cards();
+            cards.insert(cards.end(), buildFromCards.begin(), buildFromCards.end());
+        }
+
+        cards.insert(cards.end(), m_cards.begin(), m_cards.end());
+        return cards;
+    }
 } // game

@@ -41,7 +41,7 @@ namespace rummy {
         [[nodiscard]] Pile combine(const Pile* pile) const;
         [[nodiscard]] string to_string() const;
         [[nodiscard]] uint16_t get_value() const;
-        [[nodiscard]] vector<shared_ptr<Card>> get_cards() const;
+        [[nodiscard]] virtual vector<shared_ptr<Card>> get_cards() const;
         [[nodiscard]] shared_ptr<Card> get_card(uint8_t index) const;
         void remove_at(uint8_t index);
     protected:

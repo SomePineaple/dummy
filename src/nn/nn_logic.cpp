@@ -130,14 +130,14 @@ namespace rummy::nn {
         return largest_location - net_output.begin();
     }
 
-    std::vector<uint8_t> NNLogic::get_play_cards(const uint8_t handSize) const {
+    std::vector<uint8_t> NNLogic::get_play_cards(const std::vector<bool>& playMask) const {
         if (net_output.size() != NET_OUTPUT_SIZE) {
             throw runtime_error("Network output has not been initialized");
         }
 
         std::vector<tuple<float, uint8_t>> card_outputs;
-        for (int i = PLAY_OFFSET; i < PLAY_OFFSET + handSize; i++) {
-            if (net_output(0, i) > PLAY_ACTIVATION_FLOOR)
+        for (int i = PLAY_OFFSET; i < PLAY_OFFSET + playMask.size(); i++) {
+            if (net_output(0, i) > PLAY_ACTIVATION_FLOOR && playMask[i - PLAY_OFFSET])
                 card_outputs.emplace_back(net_output(0, i), i - PLAY_OFFSET);
         }
 

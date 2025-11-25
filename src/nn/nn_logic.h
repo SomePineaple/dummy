@@ -70,7 +70,7 @@ namespace rummy::nn {
 
         // returns 0 to draw from stock, and anything more is how many to draw from discard.
         uint8_t get_draw(uint8_t discardSize) const;
-        std::vector<uint8_t> get_play_cards(uint8_t handSize) const;
+        std::vector<uint8_t> get_play_cards(const std::vector<bool>& playMask) const;
         uint8_t get_discard(uint16_t handSize) const;
         void write_to_file(const string& prefix) const;
     };

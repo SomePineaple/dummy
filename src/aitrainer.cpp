@@ -76,7 +76,9 @@ tuple<int, int> test_networks(const Logic& a, const Logic& b) {
         p1IsPlayer = !p1IsPlayer;
     } while (gs->player->get_hand_size() > 0 && p2->get_hand_size() > 0 && gs->stockPile.size() > 0);
 
-    return tuple(score + ((p1IsPlayer ? 1 : -1) * (gs->player->calc_points() - gs->opponent->calc_points())), gs->melds.size());
+    score += (p1IsPlayer ? gs->player : gs->opponent)->print_melds().length() * 5;
+    score += ((p1IsPlayer ? 1 : -1) * (gs->player->calc_points() - gs->opponent->calc_points()));
+    return tuple(score, gs->melds.size());
 }
 
 void test_generation(const vector<Logic>& generation, vector<tuple<Logic, int, int>>& scoring, ba::thread_pool& threadPool) {
@@ -158,7 +160,7 @@ void sim_generations(const uint16_t numGenerations, const uint16_t keepTop, cons
             networks.push_back(get<0>(scoring[j]));
         }
 
-        cout << "done. Average score: " << totalScore / keepTop << " Avg played melds: " << totalPlayedMelds / keepTop << endl;
+        cout << "done. Average score: " << totalScore / keepTop << " played melds in top games " << totalPlayedMelds << endl;
 
         // Add some new completely random nets
         for (uint64_t j = networks.size(); j < GENERATION_SIZE; j++) {
@@ -169,6 +171,6 @@ void sim_generations(const uint16_t numGenerations, const uint16_t keepTop, cons
 
 int main() {
     ba::thread_pool pool(std::thread::hardware_concurrency());
-    sim_generations(200, 80, 25, 1, 0.01, pool, true);
+    sim_generations(200, 80, 25, 1, 0.01, pool);
     return 0;
 }

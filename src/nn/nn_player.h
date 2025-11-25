@@ -14,9 +14,11 @@ namespace rummy::nn {
     class NNPlayer final : public clients::Player {
         shared_ptr<NNLogic> msp_logic;
         optional<Meld> mopt_ToPlay;
+        std::vector<std::vector<uint8_t>> m_PlayableMelds;
         void try_play_cards(const std::vector<uint8_t>& cards, const GameState* gs);
         void try_play_cards(const std::vector<uint8_t>& cards, const shared_ptr<Card>& fromDiscard, const GameState* gs);
         void add_to_working_meld(const shared_ptr<Card>& card);
+        std::vector<bool> get_hand_play_mask(const GameState* gs);
     public:
         //NNPlayer(const network<sequential>& e, const network<sequential>& n) : msp_logic(make_shared<NNLogic>(e, n)), mopt_ToPlay(nullopt) {}
         explicit NNPlayer(const shared_ptr<NNLogic>& logic) : msp_logic(logic) {}
