@@ -31,11 +31,11 @@ namespace rummy::nn {
     >>>>>>>>;
 
     using actor_t = loss_metric<
-        fc<NET_OUTPUT_SIZE,
+        sig<fc<NET_OUTPUT_SIZE,
         htan<fc<HIDDEN_LAYER_SIZE,
         htan<fc<HIDDEN_LAYER_SIZE,
         input<matrix<float, 1, NET_INPUT_SIZE
-    >>>>>>>>;
+    >>>>>>>>>;
 
     using embed_output_t = matrix<float, 1, CARD_EMBEDDING_SIZE>;
 
@@ -45,11 +45,11 @@ namespace rummy::nn {
 
     class NNLogic {
         // Learning rate is 1 / sqrt(num parameters)
-        const float LEARNING_RATE = 1.0f / sqrt(NET_INPUT_SIZE*HIDDEN_LAYER_SIZE + 2*HIDDEN_LAYER_SIZE + HIDDEN_LAYER_SIZE*HIDDEN_LAYER_SIZE);
+        const double LEARNING_RATE = 0.075;
 
         static constexpr uint16_t DISCARD_OFFSET = 47;
         static constexpr uint16_t PLAY_OFFSET = 26;
-        static constexpr float PLAY_ACTIVATION_FLOOR = 0.7;
+        static constexpr float PLAY_ACTIVATION_FLOOR = 0.5;
 
         shared_ptr<embedder_t> msp_embedder;
         shared_ptr<actor_t> msp_actor;
@@ -69,7 +69,7 @@ namespace rummy::nn {
         void init_gs(const GameState* gs);
 
         // returns 0 to draw from stock, and anything more is how many to draw from discard.
-        uint8_t get_draw(uint8_t discardSize) const;
+        uint8_t get_draw(const std::vector<bool>& discardMask) const;
         std::vector<uint8_t> get_play_cards(const std::vector<bool>& playMask) const;
         uint8_t get_discard(uint16_t handSize) const;
         void write_to_file(const string& prefix) const;

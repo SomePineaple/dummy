@@ -24,8 +24,8 @@ namespace rummy::nn {
         msp_actor = make_shared<actor_t>();
         m_mutationRate = mutationRate;
 
-        nn_helper::initialize_network_gaussian(*msp_embedder, 0.0f, 2.0f);
-        nn_helper::initialize_network_gaussian(*msp_actor, 0.0f, 2.0f);
+        nn_helper::initialize_network_gaussian(*msp_embedder, 0.0f, .05f);
+        nn_helper::initialize_network_gaussian(*msp_actor, 0.0f, .05f);
     }
 
     NNLogic::NNLogic(const NNLogic& from) {
@@ -40,12 +40,12 @@ namespace rummy::nn {
         dlib::rand rnd;
 
         // Use σ′=σ⋅exp(τz) to update the mutation rate.
-        m_mutationRate = clamp(mutateFrom.m_mutationRate * exp(LEARNING_RATE * rnd.get_random_float()), 0.001f, 0.1f);
+        m_mutationRate = static_cast<float>(clamp(mutateFrom.m_mutationRate * exp(LEARNING_RATE * rnd.get_random_gaussian()), 0.001, 0.1));
 
         msp_embedder = make_shared<embedder_t>(*mutateFrom.msp_embedder);
         msp_actor = make_shared<actor_t>(*mutateFrom.msp_actor);
 
-        nn_helper::mutate_network(*msp_embedder, m_mutationRate, mutationChance);
+        nn_helper::mutate_network(*msp_embedder, m_mutationRate * 0.1, mutationChance);
         nn_helper::mutate_network(*msp_actor, m_mutationRate, mutationChance);
     }
 
@@ -89,15 +89,21 @@ namespace rummy::nn {
         }
 
         // Add cards on the table
-        for (int i = 0; i < MAX_PLAYED_CARDS; i++) {
+        int cardsAdded = 0;
+        for (int i = 0; i < gs->melds.size(); i++) {
             if (i < gs->melds.size()) {
                 for (const auto& card : gs->melds[i]->get_cards()) {
+                    if (cardsAdded >= MAX_PLAYED_CARDS)
+                        break;
+
                     embed_output_t embed_vec = get_card_embedding(*card);
                     net_in.insert(net_in.end(), embed_vec.begin(), embed_vec.end());
+                    cardsAdded++;
                 }
-            } else {
-                net_in.insert(net_in.end(), padding.begin(), padding.end());
             }
+        }
+        for (int i = cardsAdded; i < MAX_PLAYED_CARDS; i++) {
+            net_in.insert(net_in.end(), padding.begin(), padding.end());
         }
 
         // Add player hand
@@ -106,13 +112,12 @@ namespace rummy::nn {
                 embed_output_t embed_vec = get_card_embedding(*gs->player->get_card(i));
                 net_in.insert(net_in.end(), embed_vec.begin(), embed_vec.end());
             } else {
-                padding(0);
                 net_in.insert(net_in.end(), padding.begin(), padding.end());
             }
         }
 
         net_input_t x;
-        for (int i = 0; i < net_in.size(); i++) {
+        for (int i = 0; i < NET_INPUT_SIZE; i++) {
             x(0, i) = net_in[i];
         }
 
@@ -120,14 +125,22 @@ namespace rummy::nn {
         net_output = trans((*msp_actor)(x));
     }
 
-    uint8_t NNLogic::get_draw(const uint8_t discardSize) const {
+    uint8_t NNLogic::get_draw(const std::vector<bool>& discardMask) const {
         if (net_output.size() != NET_OUTPUT_SIZE) {
             throw runtime_error("Network output has not been initialized");
         }
 
-        // We take the most probable prediction of the first 26 elements, where 0 is draw from stock, and any other is draw from discard at that index
-        const auto largest_location = max_element(net_output.begin(), net_output.begin() + discardSize + 1);
-        return largest_location - net_output.begin();
+        float max = 0;
+        uint8_t maxIdx = 0;
+
+        for (int i = 0; i <= discardMask.size(); i++) {
+            if (net_output(0, i) > max && discardMask[i - 1]) {
+                maxIdx = i;
+                max = net_output(0, i);
+            }
+        }
+
+        return maxIdx;
     }
 
     std::vector<uint8_t> NNLogic::get_play_cards(const std::vector<bool>& playMask) const {
@@ -135,24 +148,13 @@ namespace rummy::nn {
             throw runtime_error("Network output has not been initialized");
         }
 
-        std::vector<tuple<float, uint8_t>> card_outputs;
+        std::vector<uint8_t> card_outputs;
         for (int i = PLAY_OFFSET; i < PLAY_OFFSET + playMask.size(); i++) {
             if (net_output(0, i) > PLAY_ACTIVATION_FLOOR && playMask[i - PLAY_OFFSET])
-                card_outputs.emplace_back(net_output(0, i), i - PLAY_OFFSET);
+                card_outputs.emplace_back(i - PLAY_OFFSET);
         }
 
-        if (!card_outputs.empty()) {
-            partial_sort(card_outputs.begin(), min(card_outputs.begin() + 3, card_outputs.end()), card_outputs.end(), [](const auto& a, const auto& b) {
-                return get<0>(a) > get<0>(b);
-            });
-        }
-
-        std::vector<uint8_t> play_cards;
-        for (int i = 0; i < min(card_outputs.size(), static_cast<size_t>(3)); i++) {
-            play_cards.push_back(get<1>(card_outputs[i]));
-        }
-
-        return play_cards;
+        return card_outputs;
     }
 
     uint8_t NNLogic::get_discard(const uint16_t handSize) const {

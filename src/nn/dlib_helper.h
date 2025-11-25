@@ -74,16 +74,16 @@ namespace rummy::nn::nn_helper {
             const auto W_data = W.host();       // float*
             const auto B_data = B.host();       // float*
 
-            const long W_size = W.size();
-            const long B_size = B.size();
+            const size_t W_size = W.size();
+            const size_t B_size = B.size();
 
-            for (long i = 0; i < W_size; ++i) {
+            for (size_t i = 0; i < W_size; ++i) {
                 if (chance(rng) < mutationChance) {
                     W_data[i] += dist(rng);
                     W_data[i] = std::min(30.0f, std::max(-30.0f, W_data[i]));
                 }
             }
-            for (long i = 0; i < B_size; ++i) {
+            for (size_t i = 0; i < B_size; ++i) {
                 if (chance(rng) < mutationChance) {
                     B_data[i] += dist(rng);
                     B_data[i] = std::min(30.0f, std::max(-30.0f, B_data[i]));

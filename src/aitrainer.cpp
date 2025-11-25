@@ -19,7 +19,11 @@ namespace ba = boost::asio;
 using Logic = shared_ptr<rn::NNLogic>;
 
 constexpr int GENERATION_SIZE = 500;
-constexpr int BAD_MOVE_REWARD = -2;
+constexpr int BAD_MOVE_REWARD = -5;
+constexpr uint64_t MAX_GAME_LENGTH = 100;
+
+// Score, number of melds played, illegal move rate, score of cards not played
+using metrics_t = tuple<int, uint8_t, float, uint16_t>;
 
 void create_init_generation(vector<Logic>& generation, const float mutationStrength, ba::thread_pool& threadPool) {
     // Resize to avoid locking later on
@@ -55,8 +59,10 @@ void load_generation_from_saves(vector<Logic>& generation, const float mutationS
 }
 
 // returns the score and the amount of melds played (just for progress logging)
-tuple<int, int> test_networks(const Logic& a, const Logic& b) {
+metrics_t test_networks(const Logic& a, const Logic& b) {
     int score = 0;
+    uint64_t gameLength = 0;
+    uint16_t numIllegalMoves = 0;
 
     auto p1 = make_shared<rn::NNPlayer>(a);
     auto p2 = make_shared<rn::NNPlayer>(b);
@@ -71,24 +77,31 @@ tuple<int, int> test_networks(const Logic& a, const Logic& b) {
             swap(gs, backupGs);
             static_pointer_cast<rn::NNPlayer>(gs->player)->random_turn(gs.get());
             score += BAD_MOVE_REWARD;
+            numIllegalMoves++;
         }
         swap(gs->player, gs->opponent);
         p1IsPlayer = !p1IsPlayer;
-    } while (gs->player->get_hand_size() > 0 && p2->get_hand_size() > 0 && gs->stockPile.size() > 0);
+        gameLength++;
+    } while (gs->player->get_hand_size() > 0 && p2->get_hand_size() > 0 && gs->stockPile.size() > 0 && gameLength < MAX_GAME_LENGTH);
 
-    score += (p1IsPlayer ? gs->player : gs->opponent)->print_melds().length() * 5;
-    score += ((p1IsPlayer ? 1 : -1) * (gs->player->calc_points() - gs->opponent->calc_points()));
-    return tuple(score, gs->melds.size());
+    p1 = static_pointer_cast<rn::NNPlayer>(p1IsPlayer ? gs->player : gs->opponent);
+    p2 = static_pointer_cast<rn::NNPlayer>(p1IsPlayer ? gs->opponent : gs->player);
+
+
+    // Give a bonus for playing melds.
+    score += p1->print_melds().length() * 20;
+    score += p1->calc_points() - p2->calc_points();
+    return metrics_t(score, p1->print_melds().size() / 3, static_cast<float>(numIllegalMoves) / gameLength, p1->get_unplayed_points());
 }
 
-void test_generation(const vector<Logic>& generation, vector<tuple<Logic, int, int>>& scoring, ba::thread_pool& threadPool) {
-    vector<future<tuple<int,int>>> results;
+void test_generation(const vector<Logic>& generation, vector<tuple<Logic, metrics_t>>& scoring, ba::thread_pool& threadPool) {
+    vector<future<metrics_t>> results;
 
     // Test every network against every other network twice
     for (int i = 0; i < generation.size(); i++) {
-        auto task = make_shared<packaged_task<tuple<int,int>()>>([&generation, i] {
-            int score = 0;
-            int playedMelds = 0;
+        auto task = make_shared<packaged_task<metrics_t()>>([&generation, i] {
+            metrics_t metrics;
+            auto& [score, playedMelds, illegalRate, unplayedCards] = metrics;
             dlib::rand rnd;
             // Clone NNLogic to avoid memory races.
             const auto a = make_shared<rn::NNLogic>(*generation[i]);
@@ -103,13 +116,14 @@ void test_generation(const vector<Logic>& generation, vector<tuple<Logic, int, i
                 }
                 // Clone the NNLogic to avoid memory races.
                 auto b = make_shared<rn::NNLogic>(*generation[c]);
-
-                auto result = test_networks(a, b);
-                score += get<0>(result);
-                playedMelds += get<1>(result);
+                auto [gameScore, gamePlayedMelds, gameIllegalRate, gameUnplayedCards] = test_networks(a, b);
+                score += gameScore;
+                playedMelds += gamePlayedMelds;
+                illegalRate += gameIllegalRate;
+                unplayedCards += gameUnplayedCards;
             }
 
-            return tuple(score, playedMelds);
+            return metrics;
         });
 
         results.push_back(task->get_future());
@@ -120,7 +134,7 @@ void test_generation(const vector<Logic>& generation, vector<tuple<Logic, int, i
         auto& fut = results[i];
         fut.wait();
         auto res = fut.get();
-        scoring.push_back(tuple(generation[i], get<0>(res), get<1>(res)));
+        scoring.emplace_back(generation[i], res);
     }
 }
 
@@ -135,12 +149,12 @@ void sim_generations(const uint16_t numGenerations, const uint16_t keepTop, cons
 
     cout << "done" << endl;
     for (int i = 0; i < numGenerations; i++) {
-        vector<tuple<Logic, int, int>> scoring;
+        vector<tuple<Logic, metrics_t>> scoring;
         cout << "Testing generation " << i << "..." << endl;
         test_generation(networks, scoring, threadPool);
         cout << "Done testing" << endl;
         partial_sort(scoring.begin(), scoring.begin() + keepTop, scoring.end(), [](const auto& a, const auto& b) {
-            return get<1>(a) > get<1>(b);
+            return get<0>(get<1>(a)) > get<0>(get<1>(b));
         });
 
         // Now we evolve
@@ -148,11 +162,16 @@ void sim_generations(const uint16_t numGenerations, const uint16_t keepTop, cons
         cout << "Evolving..." << endl;
         int totalScore = 0;
         int totalPlayedMelds = 0;
+        float totalIllegalMoveRate = 0;
+        int totalUnplayedCards = 0;
         for (int j = 0; j < keepTop; j++) {
             get<0>(scoring[j])->write_to_file("net_" + to_string(j));
             const uint16_t numChildren = (GENERATION_SIZE - introduceNew) / keepTop - 1;
-            totalScore += get<1>(scoring[j]);
-            totalPlayedMelds += get<2>(scoring[j]);
+            auto [score, playedMelds, illegalMoveRate, unplayedCards] = get<1>(scoring[j]);
+            totalScore += score;
+            totalPlayedMelds += playedMelds;
+            totalIllegalMoveRate += illegalMoveRate;
+            totalUnplayedCards += unplayedCards;
             for (int k = 0; k < numChildren; k++) {
                 networks.push_back(make_shared<rummy::nn::NNLogic>(*get<0>(scoring[j]), mutationChance));
             }
@@ -160,7 +179,8 @@ void sim_generations(const uint16_t numGenerations, const uint16_t keepTop, cons
             networks.push_back(get<0>(scoring[j]));
         }
 
-        cout << "done. Average score: " << totalScore / keepTop << " played melds in top games " << totalPlayedMelds << endl;
+        cout << "done. Average score: " << totalScore / keepTop << ", avg num of played melds in top games " << totalPlayedMelds / (keepTop * GENERATION_SIZE * 0.1) << endl;
+        cout << "Average illegal move rate: " << totalIllegalMoveRate / (keepTop * GENERATION_SIZE * 0.1) << ", average unplayed cards: " << static_cast<float>(totalUnplayedCards) / (keepTop * GENERATION_SIZE * 0.1) << endl;
 
         // Add some new completely random nets
         for (uint64_t j = networks.size(); j < GENERATION_SIZE; j++) {

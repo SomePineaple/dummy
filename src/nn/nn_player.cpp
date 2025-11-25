@@ -9,19 +9,29 @@
 namespace rummy::nn {
     bool NNPlayer::run_turn(GameState *gs) {
         m_PlayableMelds.clear();
-        const std::vector<bool> playMask = get_hand_play_mask(gs);
+        m_PlayableMeldsWithDiscard.clear();
+        std::vector<bool> playMask = get_hand_play_mask(gs);
+        const std::vector<bool> discardMask = get_discard_pile_mask(gs);
         msp_logic->init_gs(gs);
-        const auto play_cards = msp_logic->get_play_cards(playMask);
-        if (const auto draw = msp_logic->get_draw(gs->discardPile.size()); draw == 0) {
+        auto play_cards = msp_logic->get_play_cards(playMask);
+        if (const auto draw = msp_logic->get_draw(discardMask); draw == 0) {
             draw_from_stock(gs, 1);
-            try_play_cards(play_cards, gs);
+            try_play_cards(play_cards);
+        } else if (draw == 1) {
+            draw_from_discard(gs, 1);
+            try_play_cards(play_cards);
         } else {
-            try_play_cards(play_cards, gs->discardPile.get_card(draw - 1), gs);
-            if (mopt_ToPlay != nullopt) {
+            playMask = get<1>(m_PlayableMeldsWithDiscard[gs->discardPile.get_card(draw - 1)->get_sort_value()]);
+            play_cards = msp_logic->get_play_cards(playMask);
+            try_play_cards(play_cards, gs->discardPile.get_card(draw - 1));
+            if (!m_ToPlay.empty()) {
                 if (!draw_from_discard(gs, draw)) return false;
+                // Add the recently drawn card to the meld
+                m_ToPlay.back().add_card(m_hand.get_card(get_hand_size() - 1));
+                cout << "successfully drew from discard and played!" << endl;
             } else {
                 draw_from_stock(gs, 1);
-                try_play_cards(play_cards, gs);
+                try_play_cards(play_cards);
             }
         }
 
@@ -33,12 +43,11 @@ namespace rummy::nn {
         // Save the card we want to discard, because the index will shift after we play cards.
         const auto toDiscard = m_hand.get_card(discardIndex);
 
-        if (mopt_ToPlay != nullopt) {
-            for (const auto& card : mopt_ToPlay->get_cards()) {
+        for (const auto& meld : m_ToPlay) {
+            for (const auto& card : meld.get_cards()) {
                 add_to_working_meld(card);
             }
 
-            cout << "Played a meld" << endl;
             play_working_meld(gs);
         }
 
@@ -50,6 +59,87 @@ namespace rummy::nn {
         return false;
     }
 
+    bool NNPlayer::can_draw_discard(const shared_ptr<Card> &card) {
+        bool canDrawDiscard = false;
+        std::vector<bool> mask(m_hand.size());
+
+        std::array<std::vector<uint8_t>, 4> suits;
+        std::array<std::vector<uint8_t>, 13> ranks;
+
+        for (int i = 0; i < get_hand_size(); i++) {
+            const auto c = m_hand.get_card(i);
+            suits[c->suit].push_back(i);
+            ranks[c->value - 1].push_back(i);
+        }
+
+        std::vector<std::vector<uint8_t>> playableMelds;
+
+        if (ranks[card->value - 1].size() >= 2) {
+            playableMelds.push_back(ranks[card->value - 1]);
+            canDrawDiscard = true;
+            for (const auto& c : ranks[card->value - 1])
+                mask[c] = true;
+        }
+
+        uint8_t up1 = 100, up2 = 100, down1 = 100, down2 = 100;
+        for (const auto& c : suits[card->suit]) {
+            if (const auto val = m_hand.get_card(c)->value; val == card->value + 1) {
+                up1 = c;
+            } else if (val == card->value -1) {
+                down1 = c;
+            } else if (val == card->value + 2) {
+                up2 = c;
+            } else if (val == card->value - 2) {
+                down2 = c;
+            }
+        }
+
+        if (up1 != 100 && up2 != 100) {
+            std::vector<uint8_t> runVector;
+            runVector.push_back(up1);
+            runVector.push_back(up2);
+            playableMelds.push_back(runVector);
+            mask[up1] = true;
+            mask[up2] = true;
+            canDrawDiscard = true;
+        }
+
+        if (down1 != 100 && down2 != 100) {
+            std::vector<uint8_t> runVector;
+            runVector.push_back(down2);
+            runVector.push_back(down1);
+            playableMelds.push_back(runVector);
+            mask[down1] = true;
+            mask[down2] = true;
+            canDrawDiscard = true;
+        }
+
+        if (up1 != 100 && down1 != 100) {
+            std::vector<uint8_t> runVector;
+            runVector.push_back(down1);
+            runVector.push_back(up1);
+            playableMelds.push_back(runVector);
+            mask[down1] = true;
+            mask[up1] = true;
+            canDrawDiscard = true;
+        }
+
+        m_PlayableMeldsWithDiscard[card->get_sort_value()] = tuple(playableMelds, mask);
+
+        return canDrawDiscard;
+    }
+
+    std::vector<bool> NNPlayer::get_discard_pile_mask(const GameState *gs) {
+        std::vector<bool> mask(gs->discardPile.size());
+
+        for (int i = 0; i < gs->discardPile.size(); i++) {
+            if (can_draw_discard(gs->discardPile.get_card(i)))
+                mask[i] = true;
+        }
+
+        return mask;
+    }
+
     std::vector<bool> NNPlayer::get_hand_play_mask(const GameState* gs) {
         std::vector<bool> mask(get_hand_size());
 
@@ -59,7 +149,7 @@ namespace rummy::nn {
         for (int i = 0; i < get_hand_size(); i++) {
             const auto card = m_hand.get_card(i);
             suits[card->suit].push_back(i);
-            ranks[card->value].push_back(i);
+            ranks[card->value - 1].push_back(i);
         }
 
         // Check for complete valid sets
@@ -128,7 +218,7 @@ namespace rummy::nn {
                     }
                 }
             } else if (mType == SET) {
-                const auto& cardsOfSameRank = ranks[meld->get_card(0)->value];
+                const auto& cardsOfSameRank = ranks[meld->get_card(0)->value - 1];
                 if (!cardsOfSameRank.empty()) {
                     m_PlayableMelds.push_back(cardsOfSameRank);
                     mask[cardsOfSameRank[0]];
@@ -139,47 +229,41 @@ namespace rummy::nn {
         return mask;
     }
 
-    void NNPlayer::try_play_cards(const std::vector<uint8_t>& cards, const GameState* gs) {
-        mopt_ToPlay = nullopt;
-        Meld m;
-        for (const auto card : cards) {
-            if (card >= get_hand_size()) return;
-            m.add_card(m_hand.get_card(card));
-        }
+    void NNPlayer::try_play_cards(const std::vector<uint8_t>& cards) {
+        std::vector cardsMut(cards);
 
-        if (m.size() >= 3) {
-            if (m.get_meld_type() != INVALID) {
-                mopt_ToPlay = m;
-            }
-        } else {
-            for (const auto& meld : gs->melds) {
-                if (m.try_build_from(meld.get())) {
-                    mopt_ToPlay = m;
+        m_ToPlay.clear();
+
+        for (auto& meld : m_PlayableMelds) {
+            sort(meld.begin(), meld.end(), std::less<>());
+            if (includes(cardsMut.begin(), cardsMut.end(), meld.begin(), meld.end())) {
+                Meld m;
+
+                for (const auto& card : meld) {
+                    m.add_card(m_hand.get_card(card));
+                    if (const auto it = find(cardsMut.begin(), cardsMut.end(), card); it != cardsMut.end()) {
+                        cardsMut.erase(it);
+                    }
                 }
+
+                m_ToPlay.push_back(m);
             }
         }
     }
 
-    void NNPlayer::try_play_cards(const std::vector<uint8_t> &cards, const shared_ptr<Card>& fromDiscard, const GameState *gs) {
-        mopt_ToPlay = nullopt;
-        Meld m;
-        for (const auto card : cards) {
-            if (card >= get_hand_size()) return;
-
-            m.add_card(m_hand.get_card(card));
-        }
-
-        m.add_card(fromDiscard);
-
-        if (m.size() >= 3) {
-            if (m.get_meld_type() != INVALID) {
-                mopt_ToPlay = m;
-            }
-        } else {
-            for (const auto& meld : gs->melds) {
-                if (m.try_build_from(meld.get())) {
-                    mopt_ToPlay = m;
+    void NNPlayer::try_play_cards(const std::vector<uint8_t> &cards, const shared_ptr<Card>& fromDiscard) {
+        m_ToPlay.clear();
+        std::vector<std::vector<uint8_t>> possibleMelds = get<0>(m_PlayableMeldsWithDiscard[fromDiscard->get_sort_value()]);
+        for (auto& m : possibleMelds) {
+            sort(m.begin(), m.end(), std::less<>());
+            if (includes(cards.begin(), cards.end(), m.begin(), m.end())) {
+                Meld meld;
+                for (const auto& card : m) {
+                    meld.add_card(m_hand.get_card(card));
                 }
+
+                m_ToPlay.push_back(meld);
+                return;
             }
         }
     }
@@ -202,6 +286,11 @@ namespace rummy::nn {
 
         discard(gs, dist(rng));
     }
+
+    uint16_t NNPlayer::get_unplayed_points() const {
+        return m_hand.calc_points();
+    }
+
 
     shared_ptr<clients::Player> NNPlayer::clone() const {
         return make_shared<NNPlayer>(*this);
