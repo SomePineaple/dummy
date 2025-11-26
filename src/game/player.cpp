@@ -17,6 +17,7 @@ namespace rummy::clients {
         if (gs->discardPile.dump(m_hand, numCards)) {
             if (numCards != 1)
                 m_hand.dump(m_WorkingMeld, 1);
+            return true;
         }
         return false;
     }
