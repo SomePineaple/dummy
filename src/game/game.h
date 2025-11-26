@@ -6,7 +6,7 @@
 #define DUMMY_GAME_H
 
 #include "meld.h"
-#include "player.h"
+#include "clients/player.h"
 
 namespace rummy {
     using namespace std;

@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "game/game.h"
-#include "game/console_player.h"
+#include "game/clients/console_player.h"
 #include "signalbot/signal_player.h"
 
 void printHelp() {

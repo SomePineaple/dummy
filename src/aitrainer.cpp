@@ -13,6 +13,10 @@
 #include "nn/nn_logic.h"
 #include "nn/nn_player.h"
 
+// TODO: Increase generation size to 2000+, then build a rule based bot that just plays everything it gets with some randomness to test against.
+// Have everyone do 5 rounds against baseline bot, filter out bottom 75%, then have the rest do 20, filter out 80% of whose remaining and run 50 rounds with top 100 who are left to choose 80 or so parents
+// Same number of games as current config, but should go faster with rule bot.
+
 using namespace std;
 namespace rn = rummy::nn;
 namespace ba = boost::asio;
@@ -86,7 +90,6 @@ metrics_t test_networks(const Logic& a, const Logic& b) {
 
     p1 = static_pointer_cast<rn::NNPlayer>(p1IsPlayer ? gs->player : gs->opponent);
     p2 = static_pointer_cast<rn::NNPlayer>(p1IsPlayer ? gs->opponent : gs->player);
-
 
     // Give a bonus for playing melds.
     score += p1->print_melds().length() * 20;

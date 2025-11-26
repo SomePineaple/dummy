@@ -6,7 +6,7 @@
 
 #include <numeric>
 
-#include "game.h"
+#include "../game.h"
 
 namespace rummy::clients {
     bool Player::draw_from_stock(GameState* gs, const uint8_t numCards) {
@@ -56,11 +56,11 @@ namespace rummy::clients {
     }
 
     int16_t Player::calc_points() {
-        int16_t sum = std::accumulate(m_PlayedMelds.begin(),m_PlayedMelds.end(), 0u, [](const auto& s, const auto& m) {
-            return s + m->calc_points();
+        int16_t sum = std::accumulate(m_PlayedMelds.begin(),m_PlayedMelds.end(), 0, [](const auto& s, const auto& m) {
+            return s + m->get_value();
         });
 
-        sum -= m_hand.calc_points();
+        sum -= m_hand.get_value();
 
         return sum;
     }

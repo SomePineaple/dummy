@@ -36,7 +36,6 @@ namespace rummy {
         void add_card(const shared_ptr<Card>& card);
         bool dump(Pile& other, uint8_t numCards);
 
-        [[nodiscard]] uint16_t calc_points() const;
         [[nodiscard]] uint8_t size() const;
         [[nodiscard]] Pile combine(const Pile* pile) const;
         [[nodiscard]] string to_string() const;

@@ -8,7 +8,7 @@
 #include <boost/process.hpp>
 #include <memory>
 
-#include "../game/player.h"
+#include "../game/clients/player.h"
 
 namespace rummy::clients {
     using namespace std;

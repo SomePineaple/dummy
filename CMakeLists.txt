@@ -13,17 +13,21 @@ add_library(dummy_backend src/game/cards.cpp
         src/game/cards.h
         src/game/meld.cpp
         src/game/meld.h
-        src/game/player.cpp
-        src/game/player.h
+        src/game/clients/player.cpp
+        src/game/clients/player.h
         src/game/game.cpp
         src/game/game.h
-        src/game/console_player.cpp
-        src/game/console_player.h
+        src/game/clients/console_player.cpp
+        src/game/clients/console_player.h
         src/nn/dlib_helper.h
         src/nn/nn_logic.cpp
         src/nn/nn_logic.h
         src/nn/nn_player.cpp
-        src/nn/nn_player.h)
+        src/nn/nn_player.h
+        src/game/clients/rule_bot.cpp
+        src/game/clients/rule_bot.h
+        src/game/utils/legal_move_engine.cpp
+        src/game/utils/legal_move_engine.h)
 
 target_link_libraries(dummy_backend PRIVATE boost_format dlib::dlib)
 target_include_directories(dummy_backend PRIVATE deps/boostorg/format/include PUBLIC deps/davisking/dlib/)

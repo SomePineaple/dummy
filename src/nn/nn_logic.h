@@ -33,7 +33,7 @@ namespace rummy::nn {
     using actor_t = loss_metric<
         sig<fc<NET_OUTPUT_SIZE,
         htan<fc<HIDDEN_LAYER_SIZE,
-        htan<fc<HIDDEN_LAYER_SIZE,
+        htan<fc<HIDDEN_LAYER_SIZE*2,
         input<matrix<float, 1, NET_INPUT_SIZE
     >>>>>>>>>;
 

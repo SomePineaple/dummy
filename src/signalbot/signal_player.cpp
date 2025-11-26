@@ -57,7 +57,6 @@ namespace rummy::clients {
                 string reply = receive_user_message();
                 try {
                     if (!draw_from_discard(gs, atoi(reply.c_str()))) throw out_of_range("To big");
-
                     hasDrawn = true;
                 } catch (const exception&) {
                     send_user_message("You didn't provide a valid number");

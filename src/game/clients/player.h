@@ -5,7 +5,7 @@
 #ifndef DUMMY_PLAYER_H
 #define DUMMY_PLAYER_H
 
-#include "meld.h"
+#include "../meld.h"
 #include <string>
 #include <memory>
 

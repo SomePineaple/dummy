@@ -4,7 +4,7 @@
 
 #include "game.h"
 
-#include "player.h"
+#include "clients/player.h"
 #include <memory>
 
 namespace rummy {

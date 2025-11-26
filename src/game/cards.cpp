@@ -136,13 +136,8 @@ namespace rummy {
         std::shuffle(m_cards.begin(),m_cards.end(), g);
     }
 
-    unsigned short Pile::calc_points() const {
-        return std::accumulate(m_cards.begin(), m_cards.end(), 0u, [](const auto& sum, const auto& card) {
-            return sum + card->get_point_value();
-        });
-    }
 
-    unsigned char Pile::size() const {
+    uint8_t Pile::size() const {
         return m_cards.size();
     }
 
@@ -152,8 +147,8 @@ namespace rummy {
         });
     }
 
-    unsigned short Pile::get_value() const {
-        return std::accumulate(m_cards.begin(), m_cards.end(), 0u, [](unsigned short sum, const auto& card) {
+    uint16_t Pile::get_value() const {
+        return std::accumulate(m_cards.begin(), m_cards.end(), 0u, [](uint16_t sum, const auto& card) {
             return sum + card->get_point_value();
         });
     }

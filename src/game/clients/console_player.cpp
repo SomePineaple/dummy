@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 #include <boost/format.hpp>
-#include "game.h"
+#include "../game.h"
 
 namespace rummy::clients {
     bool ConsolePlayer::run_turn(GameState* gs) {
