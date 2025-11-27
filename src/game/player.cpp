@@ -56,8 +56,8 @@ namespace rummy::clients {
         return true;
     }
 
-    uint16_t Player::calc_points() {
-        unsigned char sum = std::accumulate(m_PlayedMelds.begin(),m_PlayedMelds.end(), 0u, [](const auto& s, const auto& m) {
+    int16_t Player::calc_points() {
+        int16_t sum = std::accumulate(m_PlayedMelds.begin(),m_PlayedMelds.end(), 0u, [](const auto& s, const auto& m) {
             return s + m->calc_points();
         });
 
@@ -88,4 +88,4 @@ namespace rummy::clients {
     }
 
     void Player::close(){}
-} // game
+} // rummy::clients

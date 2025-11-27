@@ -19,21 +19,21 @@ namespace rummy::clients {
         Pile m_hand;
         std::vector<std::shared_ptr<Meld>> m_PlayedMelds;
 
-        bool draw_from_discard(GameState* gs, unsigned char numCards);
+        bool draw_from_discard(GameState* gs, uint8_t numCards);
         bool play_working_meld(GameState* gs);
-        bool discard(GameState* gs, unsigned char cardNumber);
-        bool add_to_working_meld(unsigned char cardNumber);
+        bool discard(GameState* gs, uint8_t cardNumber);
+        bool add_to_working_meld(uint8_t cardNumber);
     public:
         virtual ~Player() = default;
 
-        bool draw_from_stock(GameState* gs, unsigned char numCards);
-        unsigned short calc_points();
+        bool draw_from_stock(GameState* gs, uint8_t numCards);
+        int16_t calc_points();
         [[nodiscard]] std::string print_melds() const;
-        [[nodiscard]] unsigned char get_hand_size() const;
+        [[nodiscard]] uint8_t get_hand_size() const;
         virtual bool run_turn(GameState* gs);
         [[nodiscard]] virtual std::shared_ptr<Player> clone() const;
         virtual void close();
-        virtual void notify_player(uint16_t opponentPoints) {}
+        virtual void notify_player(int16_t opponentPoints) {}
     };
 } // game
 
