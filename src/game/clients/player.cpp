@@ -25,7 +25,12 @@ namespace rummy::clients {
     bool Player::play_working_meld(GameState* gs) {
         if (m_WorkingMeld.size() < 3) {
             for (const auto& m : gs->melds) {
-                if (m_WorkingMeld.try_build_from(m.get())) return true;
+                if (m_WorkingMeld.try_build_from(m.get())) {
+                    m_PlayedMelds.push_back(std::make_shared<Meld>(m_WorkingMeld));
+                    gs->melds.push_back(m_PlayedMelds.back());
+                    m_WorkingMeld = Meld{};
+                    return true;
+                }
             }
         } else if (m_WorkingMeld.get_meld_type() != INVALID) {
             m_PlayedMelds.push_back(std::make_shared<Meld>(m_WorkingMeld));

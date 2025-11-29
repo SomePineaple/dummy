@@ -44,5 +44,5 @@ add_executable(console-client src/consoleclient.cpp)
 target_link_libraries(console-client PRIVATE dummy_backend)
 
 add_executable(ai-trainer src/aitrainer.cpp)
-target_include_directories(ai-trainer PRIVATE deps/davisking/dlib)
+target_include_directories(ai-trainer PRIVATE deps/boostorg/libs/asio/include)
 target_link_libraries(ai-trainer PRIVATE dummy_backend dlib::dlib Boost::asio)

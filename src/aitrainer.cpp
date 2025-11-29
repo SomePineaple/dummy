@@ -5,7 +5,8 @@
 #include <iostream>
 #include <memory>
 #include <thread>
-#include <mutex>
+#include <future>
+#include <algorithm>
 #include <boost/asio/thread_pool.hpp>
 #include <boost/asio/post.hpp>
 #include <dlib/rand.h>
@@ -57,7 +58,7 @@ void load_generation_from_saves(vector<Logic>& generation, const float mutationS
     }
 
     // Add the random ones
-    for (int i = generation.size(); i < GENERATION_SIZE; i++) {
+    for (size_t i = generation.size(); i < GENERATION_SIZE; i++) {
         generation.push_back(make_shared<rn::NNLogic>(mutationStrength));
     }
 }
@@ -88,13 +89,19 @@ metrics_t test_networks(const Logic& a, const Logic& b) {
         gameLength++;
     } while (gs->player->get_hand_size() > 0 && p2->get_hand_size() > 0 && gs->stockPile.size() > 0 && gameLength < MAX_GAME_LENGTH);
 
+    // Just to sanity check my logic for NNPlayer and RuleBot
+    if (gs->get_num_cards() != 52) {
+        cout << "We have a problem..." << endl;
+        exit(-1);
+    }
+
     p1 = static_pointer_cast<rn::NNPlayer>(p1IsPlayer ? gs->player : gs->opponent);
     p2 = static_pointer_cast<rn::NNPlayer>(p1IsPlayer ? gs->opponent : gs->player);
 
     // Give a bonus for playing melds.
-    score += p1->print_melds().length() * 20;
+    score += static_cast<int>(p1->print_melds().length()) * 20;
     score += p1->calc_points() - p2->calc_points();
-    return metrics_t(score, p1->print_melds().size() / 3, static_cast<float>(numIllegalMoves) / gameLength, p1->get_unplayed_points());
+    return {score, p1->print_melds().size() / 3, static_cast<float>(numIllegalMoves) / gameLength, p1->get_unplayed_points()};
 }
 
 void test_generation(const vector<Logic>& generation, vector<tuple<Logic, metrics_t>>& scoring, ba::thread_pool& threadPool) {

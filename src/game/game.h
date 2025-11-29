@@ -25,6 +25,8 @@ namespace rummy {
         GameState(const shared_ptr<clients::Player>& p, const shared_ptr<clients::Player>& o);
 
         explicit GameState(const GameState* clone);
+
+        uint8_t get_num_cards() const;
     };
 
     class Game {

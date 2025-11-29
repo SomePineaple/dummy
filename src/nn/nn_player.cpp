@@ -41,12 +41,19 @@ namespace rummy::nn {
         // Save the card we want to discard, because the index will shift after we play cards.
         const auto toDiscard = m_hand.get_card(discardIndex);
 
-        for (const auto& meld : m_ToPlay) {
-            for (const auto& card : meld.get_cards()) {
-                add_to_working_meld(card);
-            }
+        m_hand.sort();
+        auto handCards = m_hand.get_cards();
+        for (auto& meld : m_ToPlay) {
+            meld.sort();
+            // Dangerous. Could despawn cards out of existence.
+            m_WorkingMeld = Meld{};
+            if (auto meldCards = meld.get_cards(); includes(handCards.begin(), handCards.end(), meldCards.begin(), meldCards.end())) {
+                for (const auto& card : meld.get_cards()) {
+                    add_to_working_meld(card);
+                }
 
-            play_working_meld(gs);
+                play_working_meld(gs);
+            }
         }
 
         for (int i = 0; i < m_hand.size(); i++) {
@@ -79,13 +86,14 @@ namespace rummy::nn {
         }
     }
 
-    void NNPlayer::try_play_cards(const std::vector<uint8_t> &cards, const shared_ptr<Card>& fromDiscard, utils::LegalMoveEngine& moveEngine) {
+    void NNPlayer::try_play_cards(const std::vector<uint8_t>& cards, const shared_ptr<Card>& fromDiscard, utils::LegalMoveEngine& moveEngine) {
         m_ToPlay.clear();
         std::vector<std::vector<uint8_t>> possibleMelds = moveEngine.get_playable_melds(fromDiscard->get_sort_value());
         for (auto& m : possibleMelds) {
             sort(m.begin(), m.end(), std::less<>());
             if (includes(cards.begin(), cards.end(), m.begin(), m.end())) {
                 Meld meld;
+                meld.add_card(fromDiscard);
                 for (const auto& card : m) {
                     meld.add_card(m_hand.get_card(card));
                 }

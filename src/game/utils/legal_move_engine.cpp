@@ -172,8 +172,6 @@ namespace rummy::utils {
 
             m_PlayableMeldsWithDraw[card->get_sort_value()] = tuple(playableMelds, mask);
         }
-
-
     }
 
     std::vector<bool> LegalMoveEngine::get_hand_play_mask(const uint8_t withDraw) {
@@ -181,6 +179,10 @@ namespace rummy::utils {
     }
 
     std::vector<std::vector<uint8_t>> LegalMoveEngine::get_playable_melds(const uint8_t withDraw) {
+        /*auto v = get<0>(m_PlayableMeldsWithDraw[0]);
+        if (withDraw)
+            v.insert(v.end(), get<0>(m_PlayableMeldsWithDraw[withDraw]).begin(), get<0>(m_PlayableMeldsWithDraw[withDraw]).end());
+        return v;*/
         return get<0>(m_PlayableMeldsWithDraw[withDraw]);
     }
 

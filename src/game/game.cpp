@@ -25,6 +25,16 @@ namespace rummy {
         discardPile(clone->discardPile),
         melds(clone->melds) {}
 
+    uint8_t GameState::get_num_cards() const {
+        uint8_t cardsInMelds = 0;
+        for (const auto& m : melds) {
+            cardsInMelds += m->size();
+        }
+
+        return stockPile.size() + discardPile.size() + cardsInMelds + player->get_hand_size() + opponent->get_hand_size();
+    }
+
+
     Game::Game(const GameState& gs) {
         m_p1 = gs.player;
         m_p2 = gs.opponent;
