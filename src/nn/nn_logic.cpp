@@ -149,7 +149,7 @@ namespace rummy::nn {
         }
 
         std::vector<uint8_t> card_outputs;
-        for (int i = PLAY_OFFSET; i < PLAY_OFFSET + playMask.size(); i++) {
+        for (uint16_t i = PLAY_OFFSET; i < PLAY_OFFSET + playMask.size(); i++) {
             if (net_output(0, i) > PLAY_ACTIVATION_FLOOR && playMask[i - PLAY_OFFSET])
                 card_outputs.emplace_back(i - PLAY_OFFSET);
         }
