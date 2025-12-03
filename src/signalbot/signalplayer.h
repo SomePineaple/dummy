@@ -27,7 +27,7 @@ namespace rummy::clients {
         bool run_turn(GameState *gs) override;
         [[nodiscard]] std::shared_ptr<Player> clone() const override;
         void close() override;
-        void notify_player(uint16_t opponentPoints) override;
+        void notify_player(int16_t opponentPoints) override;
     };
 }
 

@@ -200,7 +200,7 @@ namespace rummy::clients {
         return make_shared<SignalPlayer>(*this);
     }
 
-    void SignalPlayer::notify_player(uint16_t opponentPoints) {
+    void SignalPlayer::notify_player(int16_t opponentPoints) {
         send_user_message((boost::format("The game is over. You have %i points, and your opponent has %i points.") % calc_points() % opponentPoints).str());
     }
 

@@ -118,5 +118,4 @@ namespace rummy::clients {
     void ConsolePlayer::notify_player(int16_t opponentPoints) {
         cout << boost::format("The game is over. You have %i points, and your opponent has %i points.") % calc_points() % opponentPoints << endl;
     }
-
 } // game
