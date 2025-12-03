@@ -2,8 +2,8 @@
 // Created by nj60 on 11/17/25.
 //
 
-#ifndef DUMMY_NNPLAYER_H
-#define DUMMY_NNPLAYER_H
+#ifndef DUMMY_NN_LOGIC_H
+#define DUMMY_NN_LOGIC_H
 
 #include "../game/game.h"
 #include "../game/meld.h"
@@ -76,4 +76,4 @@ namespace rummy::nn {
     };
 } // rummy::nn
 
-#endif //DUMMY_NNPLAYER_H
+#endif //DUMMY_NN_LOGIC_H

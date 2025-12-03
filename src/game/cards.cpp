@@ -8,6 +8,7 @@
 #include <random>
 #include <algorithm>
 #include "../nn/nn_logic.h"
+#include <csignal>
 
 namespace rummy {
     bool cmp_cards(const std::shared_ptr<Card>& c1, const std::shared_ptr<Card>& c2) {
@@ -159,8 +160,16 @@ namespace rummy {
     }
 
     std::shared_ptr<Card> Pile::get_card(const unsigned char index) const {
+        if (index > m_cards.size())
+            throw runtime_error("Tried to get a card with an out of bounds index");
         return m_cards.at(index);
     }
+
+    void Pile::set_cards(const std::vector<shared_ptr<Card> > &cards) {
+        m_cards.clear();
+        m_cards.insert(m_cards.begin(), cards.begin(), cards.end());
+    }
+
 
     void Pile::remove_at(const unsigned char index) {
         // TODO: Look into if a std::list would be a better option given the fact that this operation is very expensive

@@ -9,7 +9,7 @@
 using namespace rummy;
 
 int main() {
-    Game game{make_shared<clients::ConsolePlayer>("Player 1"), make_shared<clients::RuleBot>()};
+    Game game{make_shared<clients::ConsolePlayer>("Player 1"), make_shared<clients::RuleBot>(true)};
     while (game.is_game_over() == NOT_OVER)
         game.run_round();
 

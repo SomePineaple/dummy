@@ -5,7 +5,6 @@
 #include "player.h"
 
 #include <numeric>
-
 #include "../game.h"
 
 namespace rummy::clients {
@@ -23,6 +22,9 @@ namespace rummy::clients {
     }
 
     bool Player::play_working_meld(GameState* gs) {
+        if (m_WorkingMeld.size() == 0)
+            return false;
+
         if (m_WorkingMeld.size() < 3) {
             for (const auto& m : gs->melds) {
                 if (m_WorkingMeld.try_build_from(m.get())) {

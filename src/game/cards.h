@@ -42,6 +42,9 @@ namespace rummy {
         [[nodiscard]] uint16_t get_value() const;
         [[nodiscard]] virtual vector<shared_ptr<Card>> get_cards() const;
         [[nodiscard]] shared_ptr<Card> get_card(uint8_t index) const;
+
+        void set_cards(const std::vector<shared_ptr<Card>>& cards);
+
         void remove_at(uint8_t index);
     protected:
         vector<shared_ptr<Card>> m_cards;

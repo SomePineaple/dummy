@@ -46,10 +46,7 @@ namespace rummy {
     }
 
     MeldType Meld::get_meld_type() const {
-        auto c = m_cards;
-        if (m_BuildingFrom != nullptr) {
-            c = combine(m_BuildingFrom).get_cards();
-        }
+        const auto c = get_cards();
 
         if (is_valid_set(c))
             return SET;

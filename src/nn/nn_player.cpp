@@ -7,26 +7,44 @@
 #include <random>
 
 namespace rummy::nn {
+    bool has_all(const std::vector<shared_ptr<Card>>& a, const std::vector<shared_ptr<Card>>& b) {
+        bool hasAll = true;
+        for (const auto& card : b) {
+            bool hasOne = false;
+            for (const auto& c : a) {
+                hasOne = hasOne || c->get_sort_value() == card->get_sort_value();
+            }
+
+            hasAll = hasAll && hasOne;
+        }
+
+        return hasAll;
+    }
+
     bool NNPlayer::run_turn(GameState *gs) {
+        assert(gs->get_num_cards() == 52 && "We have spawned a card");
         m_hand.sort();
 
         utils::LegalMoveEngine moveEngine(gs, m_hand);
         msp_logic->init_gs(gs);
         auto play_cards = msp_logic->get_play_cards(moveEngine.get_hand_play_mask());
-        if (const auto draw = msp_logic->get_draw(moveEngine.get_discard_pile_mask()); draw == 0) {
+        const auto draw = msp_logic->get_draw(moveEngine.get_discard_pile_mask());
+        if (draw == 0) {
             draw_from_stock(gs, 1);
             try_play_cards(play_cards, moveEngine);
-        } else if (draw == gs->discardPile.size() - 1) {
+        } else if (draw == gs->discardPile.size()) {
             draw_from_discard(gs, 1);
             try_play_cards(play_cards, moveEngine);
         } else {
             play_cards = msp_logic->get_play_cards(moveEngine.get_hand_play_mask(gs->discardPile.get_card(draw - 1)->get_sort_value()));
             try_play_cards(play_cards, gs->discardPile.get_card(gs->discardPile.size() - draw - 1), moveEngine);
             if (!m_ToPlay.empty()) {
-                if (!draw_from_discard(gs, draw)) return false;
+                if (!draw_from_discard(gs, gs->discardPile.size() - draw)) return false;
                 // Add the recently drawn card to the meld
-                m_ToPlay.back().add_card(m_hand.get_card(get_hand_size() - 1));
-                cout << "successfully drew from discard and played!" << endl;
+                //m_ToPlay.back().add_card(m_WorkingMeld.get_card(m_WorkingMeld.size() - 1));
+                // cout << "successfully drew from discard and played!" << endl;
+                if (gs->discardPile.size() - draw != 1)
+                    m_WorkingMeld.dump(m_hand, 1);
             } else {
                 draw_from_stock(gs, 1);
                 try_play_cards(play_cards, moveEngine);
@@ -42,19 +60,23 @@ namespace rummy::nn {
         const auto toDiscard = m_hand.get_card(discardIndex);
 
         m_hand.sort();
-        auto handCards = m_hand.get_cards();
         for (auto& meld : m_ToPlay) {
-            meld.sort();
-            // Dangerous. Could despawn cards out of existence.
+            auto handCards = m_hand.get_cards();
             m_WorkingMeld = Meld{};
-            if (auto meldCards = meld.get_cards(); includes(handCards.begin(), handCards.end(), meldCards.begin(), meldCards.end())) {
-                for (const auto& card : meld.get_cards()) {
+            //m_WorkingMeld.dump(m_hand, m_WorkingMeld.size());
+            if (auto meldCards = meld.get_cards(); has_all(handCards, meldCards)) {
+                for (const auto& card : meldCards) {
                     add_to_working_meld(card);
                 }
 
-                play_working_meld(gs);
+                if (!play_working_meld(gs)) {
+                    m_WorkingMeld.dump(m_hand, m_WorkingMeld.size());
+                }
             }
         }
+
+        auto numCards = gs->get_num_cards();
+        assert(numCards == 52 && "We have spawned a card");
 
         for (int i = 0; i < m_hand.size(); i++) {
             if (m_hand.get_card(i) == toDiscard)
@@ -105,10 +127,11 @@ namespace rummy::nn {
     }
 
     void NNPlayer::add_to_working_meld(const shared_ptr<Card>& card) {
+        m_WorkingMeld.add_card(card);
         for (int i = 0; i < m_hand.size(); i++) {
             if (m_hand.get_card(i) == card) {
-                m_WorkingMeld.add_card(card);
                 m_hand.remove_at(i);
+                return;
             }
         }
     }

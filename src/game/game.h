@@ -26,7 +26,7 @@ namespace rummy {
 
         explicit GameState(const GameState* clone);
 
-        uint8_t get_num_cards() const;
+        [[nodiscard]] uint8_t get_num_cards() const;
     };
 
     class Game {

@@ -11,6 +11,7 @@
 #include <boost/asio/post.hpp>
 #include <dlib/rand.h>
 
+#include "game/clients/rule_bot.h"
 #include "nn/nn_logic.h"
 #include "nn/nn_player.h"
 
@@ -28,7 +29,7 @@ constexpr int BAD_MOVE_REWARD = -5;
 constexpr uint64_t MAX_GAME_LENGTH = 100;
 
 // Score, number of melds played, illegal move rate, score of cards not played
-using metrics_t = tuple<int, uint8_t, float, uint16_t>;
+using metrics_t = tuple<int16_t, uint8_t, float, uint16_t>;
 
 void create_init_generation(vector<Logic>& generation, const float mutationStrength, ba::thread_pool& threadPool) {
     // Resize to avoid locking later on
@@ -64,13 +65,13 @@ void load_generation_from_saves(vector<Logic>& generation, const float mutationS
 }
 
 // returns the score and the amount of melds played (just for progress logging)
-metrics_t test_networks(const Logic& a, const Logic& b) {
+metrics_t test_networks(const Logic& a) {
     int score = 0;
     uint64_t gameLength = 0;
     uint16_t numIllegalMoves = 0;
 
     auto p1 = make_shared<rn::NNPlayer>(a);
-    auto p2 = make_shared<rn::NNPlayer>(b);
+    auto p2 = make_shared<rummy::clients::RuleBot>();
 
     auto gs = std::make_unique<rummy::GameState>(p1, p2);
 
@@ -84,19 +85,15 @@ metrics_t test_networks(const Logic& a, const Logic& b) {
             score += BAD_MOVE_REWARD;
             numIllegalMoves++;
         }
+
         swap(gs->player, gs->opponent);
         p1IsPlayer = !p1IsPlayer;
         gameLength++;
+
     } while (gs->player->get_hand_size() > 0 && p2->get_hand_size() > 0 && gs->stockPile.size() > 0 && gameLength < MAX_GAME_LENGTH);
 
-    // Just to sanity check my logic for NNPlayer and RuleBot
-    if (gs->get_num_cards() != 52) {
-        cout << "We have a problem..." << endl;
-        exit(-1);
-    }
-
     p1 = static_pointer_cast<rn::NNPlayer>(p1IsPlayer ? gs->player : gs->opponent);
-    p2 = static_pointer_cast<rn::NNPlayer>(p1IsPlayer ? gs->opponent : gs->player);
+    //p2 = static_pointer_cast<rn::NNPlayer>(p1IsPlayer ? gs->opponent : gs->player);
 
     // Give a bonus for playing melds.
     score += static_cast<int>(p1->print_melds().length()) * 20;
@@ -108,25 +105,24 @@ void test_generation(const vector<Logic>& generation, vector<tuple<Logic, metric
     vector<future<metrics_t>> results;
 
     // Test every network against every other network twice
-    for (int i = 0; i < generation.size(); i++) {
-        auto task = make_shared<packaged_task<metrics_t()>>([&generation, i] {
+    for (const auto& network : generation) {
+        auto task = make_shared<packaged_task<metrics_t()>>([&network] {
             metrics_t metrics;
             auto& [score, playedMelds, illegalRate, unplayedCards] = metrics;
             dlib::rand rnd;
             // Clone NNLogic to avoid memory races.
-            const auto a = make_shared<rn::NNLogic>(*generation[i]);
-            // Play against 10% of the generation randomly
-            for (int j = 0; j < GENERATION_SIZE * 0.1; j++) {
-
-                const auto c = rnd.get_integer_in_range(0, generation.size());
+            const auto a = make_shared<rn::NNLogic>(*network);
+            // Play against rule bot 50 times.
+            for (int j = 0; j < 50; j++) {
+                //const auto c = rnd.get_integer_in_range(0, generation.size());
                 // Don't bother playing against ones self
-                if (c == i) {
+                /*if (c == i) {
                     j--;
                     continue;
                 }
                 // Clone the NNLogic to avoid memory races.
-                auto b = make_shared<rn::NNLogic>(*generation[c]);
-                auto [gameScore, gamePlayedMelds, gameIllegalRate, gameUnplayedCards] = test_networks(a, b);
+                auto b = make_shared<rn::NNLogic>(*generation[c]);*/
+                auto [gameScore, gamePlayedMelds, gameIllegalRate, gameUnplayedCards] = test_networks(a);
                 score += gameScore;
                 playedMelds += gamePlayedMelds;
                 illegalRate += gameIllegalRate;

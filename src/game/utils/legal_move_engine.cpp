@@ -47,6 +47,9 @@ namespace rummy::utils {
                 buildingMeld.push_back(suit[0]);
                 for (int i = 1; i < suit.size(); i++) {
                     if (hand.get_card(i)->value == hand.get_card(i - 1)->value + 1) {
+                        if (buildingMeld.empty()) {
+                            buildingMeld.push_back(suit[i - 1]);
+                        }
                         buildingMeld.push_back(suit[i]);
                         if (buildingMeld.size() >= 3) {
                             mask[suit[i]] = true;
