@@ -14,6 +14,7 @@ namespace rummy::clients {
 
     bool Player::draw_from_discard(GameState* gs, const uint8_t numCards) {
         if (gs->discardPile.dump(m_hand, numCards)) {
+            // If we draw more than one from discard, we have to play it
             if (numCards != 1)
                 m_hand.dump(m_WorkingMeld, 1);
             return true;
@@ -94,7 +95,7 @@ namespace rummy::clients {
         return m_hand.get_card(index);
     }
 
-    shared_ptr<Player> Player::clone() const {
+    std::shared_ptr<Player> Player::clone() const {
         return make_shared<Player>(*this);
     }
 

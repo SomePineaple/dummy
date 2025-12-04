@@ -6,4 +6,4 @@
 	url = https://github.com/boostorg/boost.git
 [submodule "deps/davisking/dlib"]
 	path = deps/davisking/dlib
-	url = git@github.com:davisking/dlib.git
+	url = https://github.com/davisking/dlib.git

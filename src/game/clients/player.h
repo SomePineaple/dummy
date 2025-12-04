@@ -27,10 +27,10 @@ namespace rummy::clients {
     public:
         virtual ~Player() = default;
 
-        bool draw_from_stock(GameState* gs, unsigned char numCards);
+        bool draw_from_stock(GameState* gs, uint8_t numCards);
         int16_t calc_points();
         [[nodiscard]] string print_melds() const;
-        [[nodiscard]] unsigned char get_hand_size() const;
+        [[nodiscard]] uint8_t get_hand_size() const;
         [[nodiscard]] std::shared_ptr<Card> get_card(uint8_t index) const;
 
         // Returns false if the player made an illegal move and we need to reset.
