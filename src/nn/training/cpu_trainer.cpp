@@ -64,9 +64,9 @@ namespace rummy::nn {
         //p2 = static_pointer_cast<rn::NNPlayer>(p1IsPlayer ? gs->opponent : gs->player);
 
         // Give a bonus for playing melds.
-        score += static_cast<int>(p1->print_melds().length()) * 10;
+        score += static_cast<int>(p1->print_melds().length()) * 20;
         score += p1->calc_points() - p2->calc_points();
-        return {score, p1->print_melds().size() / 3, static_cast<float>(numIllegalMoves) / gameLength, p1->get_unplayed_points()};
+        return {score, p1->print_melds().size() / 3.0, static_cast<float>(numIllegalMoves) / gameLength, p1->get_unplayed_points()};
     }
 
     void CpuTrainer::test_generation() {
@@ -81,8 +81,8 @@ namespace rummy::nn {
                 dlib::rand rnd;
                 // Clone NNLogic to avoid memory races.
                 const auto a = std::make_shared<NNLogic>(*network);
-                // Play against rule bot 50 times.
-                for (int j = 0; j < 50; j++) {
+                // Play against rule bot 25 times.
+                for (int j = 0; j < 25; j++) {
                     auto [gameScore, gamePlayedMelds, gameIllegalRate, gameUnplayedCards] = test_networks(a);
                     score += gameScore;
                     playedMelds += gamePlayedMelds;
@@ -114,7 +114,7 @@ namespace rummy::nn {
         m_networks.clear();
         cout << "Evolving..." << endl;
         int totalScore = 0;
-        int totalPlayedMelds = 0;
+        float totalPlayedMelds = 0;
         float totalIllegalMoveRate = 0;
         int totalUnplayedCards = 0;
 
@@ -133,8 +133,8 @@ namespace rummy::nn {
             m_networks.push_back(get<0>(m_scoring[j]));
         }
 
-        cout << "done. Average score: " << totalScore / keepTop << ", avg num of played melds in top games " << totalPlayedMelds / (keepTop * m_GenerationSize * 0.1) << endl;
-        cout << "Average illegal move rate: " << totalIllegalMoveRate / (keepTop * m_GenerationSize * 0.1) << ", average unplayed cards: " << static_cast<float>(totalUnplayedCards) / (keepTop * m_GenerationSize * 0.1) << endl;
+        cout << "done. Average score: " << totalScore / keepTop << ", avg num of played cards in top games " << totalPlayedMelds / (keepTop * 25) << endl;
+        cout << "Average illegal move rate: " << totalIllegalMoveRate / (keepTop * 25) << ", average unplayed points: " << static_cast<float>(totalUnplayedCards) / (keepTop * 25) << endl;
 
         // Add some new completely random nets
         for (uint64_t j = m_networks.size(); j < m_GenerationSize; j++) {

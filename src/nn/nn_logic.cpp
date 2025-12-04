@@ -45,7 +45,8 @@ namespace rummy::nn {
         msp_embedder = make_shared<embedder_t>(*mutateFrom.msp_embedder);
         msp_actor = make_shared<actor_t>(*mutateFrom.msp_actor);
 
-        nn_helper::mutate_network(*msp_embedder, m_mutationRate * 0.1, mutationChance);
+        // Smaller mutation rate on the embedder so the actor doesn't go crazy because we change its input
+        nn_helper::mutate_network(*msp_embedder, m_mutationRate * 0.1f, mutationChance);
         nn_helper::mutate_network(*msp_actor, m_mutationRate, mutationChance);
     }
 

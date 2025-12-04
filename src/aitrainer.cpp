@@ -3,15 +3,16 @@
 //
 
 #include <thread>
-
 #include "nn/training/cpu_trainer.h"
 
 // TODO: Increase generation size to 2000+, then build a rule based bot that just plays everything it gets with some randomness to test against.
 // Have everyone do 5 rounds against baseline bot, filter out bottom 75%, then have the rest do 20, filter out 80% of whose remaining and run 50 rounds with top 100 who are left to choose 80 or so parents
 // Same number of games as current config, but should go faster with rule bot.
 
-constexpr int GENERATION_SIZE = 500;
-constexpr int BAD_MOVE_REWARD = -5;
+// TODO: Add unit testing to make sure that evolving and mutating is actually working.
+
+constexpr uint16_t GENERATION_SIZE = 1000;
+constexpr int BAD_MOVE_REWARD = -50;
 constexpr uint64_t MAX_GAME_LENGTH = 100;
 constexpr uint16_t NUM_GENERATIONS = 200;
 

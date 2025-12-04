@@ -13,7 +13,7 @@
 
 namespace rummy::nn {
     // Score, number of melds played, illegal move rate, score of cards not played
-    using metrics_t = std::tuple<int16_t, uint8_t, float, uint16_t>;
+    using metrics_t = std::tuple<int16_t, float, float, uint16_t>;
     using Logic = std::shared_ptr<NNLogic>;
 
     class CpuTrainer {
