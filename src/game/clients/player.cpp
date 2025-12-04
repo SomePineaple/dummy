@@ -5,8 +5,7 @@
 #include "player.h"
 
 #include <numeric>
-
-#include "game.h"
+#include "../game.h"
 
 namespace rummy::clients {
     bool Player::draw_from_stock(GameState* gs, const uint8_t numCards) {
@@ -23,6 +22,9 @@ namespace rummy::clients {
     }
 
     bool Player::play_working_meld(GameState* gs) {
+        if (m_WorkingMeld.size() == 0)
+            return false;
+
         if (m_WorkingMeld.size() < 3) {
             for (const auto& m : gs->melds) {
                 if (m_WorkingMeld.try_build_from(m.get())) {
@@ -62,11 +64,11 @@ namespace rummy::clients {
     }
 
     int16_t Player::calc_points() {
-        int16_t sum = std::accumulate(m_PlayedMelds.begin(),m_PlayedMelds.end(), 0u, [](const auto& s, const auto& m) {
-            return s + m->calc_points();
+        int16_t sum = std::accumulate(m_PlayedMelds.begin(),m_PlayedMelds.end(), 0, [](const auto& s, const auto& m) {
+            return s + m->get_value();
         });
 
-        sum -= m_hand.calc_points();
+        sum -= m_hand.get_value();
 
         return sum;
     }
@@ -86,6 +88,10 @@ namespace rummy::clients {
 
     bool Player::run_turn(GameState* gs) {
         return false;
+    }
+
+    std::shared_ptr<Card> Player::get_card(const uint8_t index) const {
+        return m_hand.get_card(index);
     }
 
     shared_ptr<Player> Player::clone() const {

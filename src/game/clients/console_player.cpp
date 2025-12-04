@@ -2,12 +2,12 @@
 // Created by nj60 on 11/12/25.
 //
 
-#include "consoleplayer.h"
+#include "console_player.h"
 
 #include <iostream>
 #include <string>
 #include <boost/format.hpp>
-#include "game.h"
+#include "../game.h"
 
 namespace rummy::clients {
     bool ConsolePlayer::run_turn(GameState* gs) {

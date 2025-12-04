@@ -46,10 +46,7 @@ namespace rummy {
     }
 
     MeldType Meld::get_meld_type() const {
-        auto c = m_cards;
-        if (m_BuildingFrom != nullptr) {
-            c = combine(m_BuildingFrom).get_cards();
-        }
+        const auto c = get_cards();
 
         if (is_valid_set(c))
             return SET;
@@ -66,5 +63,16 @@ namespace rummy {
 
         m_BuildingFrom = nullptr;
         return false;
+    }
+
+    std::vector<shared_ptr<Card>> Meld::get_cards() const {
+        std::vector<shared_ptr<Card>> cards;
+        if (m_BuildingFrom != nullptr) {
+            auto buildFromCards = m_BuildingFrom->get_cards();
+            cards.insert(cards.end(), buildFromCards.begin(), buildFromCards.end());
+        }
+
+        cards.insert(cards.end(), m_cards.begin(), m_cards.end());
+        return cards;
     }
 } // game

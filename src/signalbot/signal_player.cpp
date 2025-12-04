@@ -2,7 +2,7 @@
 // Created by somepineaple on 11/12/25.
 //
 
-#include "signalplayer.h"
+#include "signal_player.h"
 
 #include "nlohmann/json.hpp"
 #include <boost/process/v2/environment.hpp>
@@ -19,7 +19,7 @@ namespace asio = boost::asio;
 namespace bp = boost::process;
 namespace env = bp::environment;
 
-int randomInt() {
+int rand_int() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(1, 10000);
@@ -57,7 +57,6 @@ namespace rummy::clients {
                 string reply = receive_user_message();
                 try {
                     if (!draw_from_discard(gs, atoi(reply.c_str()))) throw out_of_range("To big");
-
                     hasDrawn = true;
                 } catch (const exception&) {
                     send_user_message("You didn't provide a valid number");
@@ -72,20 +71,19 @@ namespace rummy::clients {
         do {
             send_game_state(gs);
             send_user_message("Send:\n[Play] to play the meld\n[Add] to add a card to the meld\n[Discard] to discard\n[Reset] to reset your turn (cheater)");
-            string userResponse = receive_user_message();
-            if (userResponse == "Play") {
+            if (string response = receive_user_message(); response == "Play") {
                 if (!play_working_meld(gs))
                     send_user_message("Can't play the working meld, it is no valid.");
-            } else if (userResponse == "Add") {
+            } else if (response == "Add") {
                 ask_and_add();
-            } else if (userResponse == "Discard") {
+            } else if (response == "Discard") {
                 if (m_WorkingMeld.size() != 0)
                     send_user_message("You cannot discard yet, you are building a meld to play!");
                 else if (ask_and_discard(gs)) {
                     send_user_message("Your opponent is playing...");
                     return true;
                 }
-            } else if (userResponse == "Reset") {
+            } else if (response == "Reset") {
                 loop = false;
             } else {
                 send_user_message("That was not a valid response. Try again");
@@ -131,7 +129,7 @@ namespace rummy::clients {
     }
 
     void SignalPlayer::send_user_message(const string& message) const {
-        int messageId = randomInt();
+        int messageId = rand_int();
         json req = {
             {"jsonrpc", "2.0"},
             {"method", "send"},

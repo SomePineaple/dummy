@@ -4,7 +4,9 @@
 
 #ifndef DUMMY_GAME_H
 #define DUMMY_GAME_H
-#include "player.h"
+
+#include "meld.h"
+#include "clients/player.h"
 
 namespace rummy {
     using namespace std;
@@ -23,6 +25,8 @@ namespace rummy {
         GameState(const shared_ptr<clients::Player>& p, const shared_ptr<clients::Player>& o);
 
         explicit GameState(const GameState* clone);
+
+        [[nodiscard]] uint8_t get_num_cards() const;
     };
 
     class Game {

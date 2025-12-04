@@ -4,7 +4,7 @@
 
 #include "game.h"
 
-#include "player.h"
+#include "clients/player.h"
 #include <memory>
 
 namespace rummy {
@@ -24,6 +24,16 @@ namespace rummy {
         stockPile(clone->stockPile),
         discardPile(clone->discardPile),
         melds(clone->melds) {}
+
+    uint8_t GameState::get_num_cards() const {
+        uint8_t cardsInMelds = 0;
+        for (const auto& m : melds) {
+            cardsInMelds += m->size();
+        }
+
+        return stockPile.size() + discardPile.size() + cardsInMelds + player->get_hand_size() + opponent->get_hand_size();
+    }
+
 
     Game::Game(const GameState& gs) {
         m_p1 = gs.player;
@@ -61,5 +71,4 @@ namespace rummy {
         m_p1->notify_player(m_p2->calc_points());
         m_p2->notify_player(m_p1->calc_points());
     }
-
 } // game

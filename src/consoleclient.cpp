@@ -3,12 +3,13 @@
 //
 
 #include "game/game.h"
-#include "game/consoleplayer.h"
+#include "game/clients/console_player.h"
+#include "game/clients/rule_bot.h"
 
 using namespace rummy;
 
 int main() {
-    Game game{make_shared<clients::ConsolePlayer>("Player 1"), make_shared<clients::ConsolePlayer>("Player 2")};
+    Game game{make_shared<clients::ConsolePlayer>("Player 1"), make_shared<clients::RuleBot>(true)};
     while (game.is_game_over() == NOT_OVER)
         game.run_round();
 
