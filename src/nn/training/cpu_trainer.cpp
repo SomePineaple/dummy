@@ -118,27 +118,54 @@ namespace rummy::nn {
         float totalIllegalMoveRate = 0;
         int totalUnplayedCards = 0;
 
+        std::vector<std::future<std::vector<shared_ptr<NNLogic>>>> futures;
+
         for (int j = 0; j < keepTop; j++) {
-            get<0>(m_scoring[j])->write_to_file("net_" + to_string(j));
             const uint16_t numChildren = (m_GenerationSize - introduceNew) / keepTop - 1;
             auto [score, playedMelds, illegalMoveRate, unplayedCards] = get<1>(m_scoring[j]);
             totalScore += score;
             totalPlayedMelds += playedMelds;
             totalIllegalMoveRate += illegalMoveRate;
             totalUnplayedCards += unplayedCards;
-            for (int k = 0; k < numChildren; k++) {
-                m_networks.push_back(std::make_shared<NNLogic>(*get<0>(m_scoring[j]), m_MutationChance));
-            }
 
-            m_networks.push_back(get<0>(m_scoring[j]));
+            auto task = std::make_shared<packaged_task<std::vector<shared_ptr<NNLogic>>()>>([&] {
+                std::vector<shared_ptr<NNLogic>> nets;
+                for (int k = 0; k < numChildren; k++) {
+                    nets.push_back(std::make_shared<NNLogic>(*get<0>(m_scoring[j]), m_MutationChance));
+                }
+
+                nets.push_back(get<0>(m_scoring[j]));
+                return nets;
+            });
+
+            futures.push_back(task->get_future());
+            ba::post(m_ThreadPool, [task]{ (*task)(); });
         }
 
-        cout << "done. Average score: " << totalScore / keepTop << ", avg num of played cards in top games " << totalPlayedMelds / (keepTop * 25) << endl;
+        cout << "Average score: " << totalScore / keepTop << ", avg num of played cards in top games " << totalPlayedMelds / (keepTop * 25) << endl;
         cout << "Average illegal move rate: " << totalIllegalMoveRate / (keepTop * 25) << ", average unplayed points: " << static_cast<float>(totalUnplayedCards) / (keepTop * 25) << endl;
+
+        for (auto& fut : futures) {
+            fut.wait();
+            auto res = fut.get();
+            m_networks.insert(m_networks.end(), res.begin(), res.end());
+        }
 
         // Add some new completely random nets
         for (uint64_t j = m_networks.size(); j < m_GenerationSize; j++) {
             m_networks.push_back(make_shared<NNLogic>(m_MutationStrength));
+        }
+    }
+
+    void CpuTrainer::save_top(const uint16_t num) {
+        const uint16_t saveTop = std::min(num, m_GenerationSize);
+
+        partial_sort(m_scoring.begin(), m_scoring.begin() + saveTop, m_scoring.end(), [](const auto& a, const auto& b) {
+            return get<0>(get<1>(a)) > get<0>(get<1>(b));
+        });
+
+        for (uint16_t i = 0; i < saveTop; i++) {
+            get<0>(m_scoring[i])->write_to_file("net_" + to_string(i));
         }
     }
 }

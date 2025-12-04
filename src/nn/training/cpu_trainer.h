@@ -34,6 +34,9 @@ namespace rummy::nn {
 
         void test_generation();
         void evolve(uint16_t keepTop, uint16_t introduceNew);
+
+        // Serializes the top num networks to a file for later use
+        void save_top(uint16_t num);
     };
 }
 

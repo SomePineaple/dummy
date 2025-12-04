@@ -48,3 +48,9 @@ add_executable(ai-trainer src/aitrainer.cpp
         src/nn/training/cpu_trainer.h)
 target_include_directories(ai-trainer PRIVATE deps/boostorg/libs/asio/include)
 target_link_libraries(ai-trainer PRIVATE dummy_backend dlib::dlib Boost::asio)
+
+add_executable(dummy-tester test/test.cpp)
+target_include_directories(dummy-tester PRIVATE deps/boostorg/boost/libs/test/include src/)
+target_link_libraries(dummy-tester PRIVATE Boost::unit_test_framework dummy_backend)
+
+add_test(NAME testStuff COMMAND dummy-tester)

@@ -39,6 +39,13 @@ int main() {
         std::cout << "Testing generation " << i << std::endl;
         trainer.test_generation();
         trainer.evolve(80, 25);
+
+        // Save the top 5 networks every 10 generations
+        if (!(i % 10)) {
+            std::cout << "Saving the top 5 networks to a file..." << std::endl;
+            trainer.save_top(5);
+            std::cout << "done." << std::endl;
+        }
     }
     return 0;
 }

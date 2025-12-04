@@ -24,8 +24,14 @@ namespace rummy::nn {
         msp_actor = make_shared<actor_t>();
         m_mutationRate = mutationRate;
 
-        nn_helper::initialize_network_gaussian(*msp_embedder, 0.0f, .05f);
-        nn_helper::initialize_network_gaussian(*msp_actor, 0.0f, .05f);
+        // Ensure we have initialized weights
+        net_input_t x;
+        x = 0;
+        (*msp_actor)(x);
+
+        matrix<float, 1, 17> f;
+        f = 0;
+        (*msp_embedder)(f);
     }
 
     NNLogic::NNLogic(const NNLogic& from) {
@@ -46,8 +52,8 @@ namespace rummy::nn {
         msp_actor = make_shared<actor_t>(*mutateFrom.msp_actor);
 
         // Smaller mutation rate on the embedder so the actor doesn't go crazy because we change its input
-        nn_helper::mutate_network(*msp_embedder, m_mutationRate * 0.1f, mutationChance);
-        nn_helper::mutate_network(*msp_actor, m_mutationRate, mutationChance);
+        nn_helper::mutate_network(msp_embedder, m_mutationRate * 0.1f, mutationChance);
+        nn_helper::mutate_network(msp_actor, m_mutationRate, mutationChance);
     }
 
     NNLogic::NNLogic(const shared_ptr<embedder_t>& e, const shared_ptr<actor_t>& n) : msp_embedder(e), msp_actor(n) {
