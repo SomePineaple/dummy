@@ -95,7 +95,7 @@ namespace rummy::utils {
                 const auto& cardsOfSameRank = ranks[meld->get_card(0)->value - 1];
                 if (!cardsOfSameRank.empty()) {
                     playableMelds.push_back(cardsOfSameRank);
-                    mask[cardsOfSameRank[0]];
+                    mask[cardsOfSameRank[0]] = true;
                 }
             }
         }
