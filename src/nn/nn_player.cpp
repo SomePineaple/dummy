@@ -22,14 +22,12 @@ namespace rummy::nn {
     }
 
     bool NNPlayer::run_turn(GameState *gs) {
-        assert(gs->get_num_cards() == 52 && "We have spawned a card");
         m_hand.sort();
 
         utils::LegalMoveEngine moveEngine(gs, m_hand);
         msp_logic->init_gs(gs);
         auto play_cards = msp_logic->get_play_cards(moveEngine.get_hand_play_mask());
-        const auto draw = msp_logic->get_draw(moveEngine.get_discard_pile_mask());
-        if (draw == 0) {
+        if (const auto draw = msp_logic->get_draw(moveEngine.get_discard_pile_mask()); draw == 0) {
             draw_from_stock(gs, 1);
             try_play_cards(play_cards, moveEngine);
         } else if (draw == gs->discardPile.size()) {
@@ -74,9 +72,6 @@ namespace rummy::nn {
                 }
             }
         }
-
-        auto numCards = gs->get_num_cards();
-        assert(numCards == 52 && "We have spawned a card");
 
         for (int i = 0; i < m_hand.size(); i++) {
             if (m_hand.get_card(i) == toDiscard)

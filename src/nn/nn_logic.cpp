@@ -137,10 +137,10 @@ namespace rummy::nn {
             throw runtime_error("Network output has not been initialized");
         }
 
-        float max = 0;
+        float max = net_output(0, 0);
         uint8_t maxIdx = 0;
 
-        for (int i = 0; i <= discardMask.size(); i++) {
+        for (int i = 1; i <= discardMask.size(); i++) {
             if (net_output(0, i) > max && discardMask[i - 1]) {
                 maxIdx = i;
                 max = net_output(0, i);
