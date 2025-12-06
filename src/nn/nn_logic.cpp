@@ -76,19 +76,19 @@ namespace rummy::nn {
         return it->second;
     }
 
-    void NNLogic::init_gs(const GameState *gs) {
+    void NNLogic::init_gs(const GameState& gs) {
         embed_output_t padding{};
         padding = 0;
 
         std::vector<float> net_in;
         // Normalize to -1 -> 1 scale
-        net_in.push_back(static_cast<float>(gs->stockPile.size()) / 12.5f - 1.0f);
-        net_in.push_back(2.0f * static_cast<float>(gs->opponent->get_hand_size()) / MAX_HAND_SIZE - 1.0f);
+        net_in.push_back(static_cast<float>(gs.stockPile.size()) / 12.5f - 1.0f);
+        net_in.push_back(2.0f * static_cast<float>(gs.opponent->get_hand_size()) / MAX_HAND_SIZE - 1.0f);
 
         // Add discard pile
         for (int i = 0; i < MAX_DISCARD_SIZE; i++) {
-            if (i < gs->discardPile.size()) {
-                embed_output_t embed_vec = get_card_embedding(*gs->discardPile.get_card(i));
+            if (i < gs.discardPile.size()) {
+                embed_output_t embed_vec = get_card_embedding(gs.discardPile.get_card(i));
                 net_in.insert(net_in.end(), embed_vec.begin(), embed_vec.end());
             } else {
                 net_in.insert(net_in.end(), padding.begin(), padding.end());
@@ -97,13 +97,13 @@ namespace rummy::nn {
 
         // Add cards on the table
         int cardsAdded = 0;
-        for (int i = 0; i < gs->melds.size(); i++) {
-            if (i < gs->melds.size()) {
-                for (const auto& card : gs->melds[i]->get_cards()) {
+        for (int i = 0; i < gs.melds.size(); i++) {
+            if (i < gs.melds.size()) {
+                for (const auto& card : gs.melds[i]->get_cards()) {
                     if (cardsAdded >= MAX_PLAYED_CARDS)
                         break;
 
-                    embed_output_t embed_vec = get_card_embedding(*card);
+                    embed_output_t embed_vec = get_card_embedding(card);
                     net_in.insert(net_in.end(), embed_vec.begin(), embed_vec.end());
                     cardsAdded++;
                 }
@@ -115,8 +115,8 @@ namespace rummy::nn {
 
         // Add player hand
         for (int i = 0; i < MAX_HAND_SIZE; i++) {
-            if (i < gs->player->get_hand_size()) {
-                embed_output_t embed_vec = get_card_embedding(*gs->player->get_card(i));
+            if (i < gs.player->get_hand_size()) {
+                embed_output_t embed_vec = get_card_embedding(gs.player->get_card(i));
                 net_in.insert(net_in.end(), embed_vec.begin(), embed_vec.end());
             } else {
                 net_in.insert(net_in.end(), padding.begin(), padding.end());

@@ -7,12 +7,12 @@
 #include <random>
 
 namespace rummy::nn {
-    bool has_all(const std::vector<shared_ptr<Card>>& a, const std::vector<shared_ptr<Card>>& b) {
+    bool has_all(const std::vector<Card>& a, const std::vector<Card>& b) {
         bool hasAll = true;
         for (const auto& card : b) {
             bool hasOne = false;
             for (const auto& c : a) {
-                hasOne = hasOne || c->get_sort_value() == card->get_sort_value();
+                hasOne = hasOne || c.get_sort_value() == card.get_sort_value();
             }
 
             hasAll = hasAll && hasOne;
@@ -21,7 +21,7 @@ namespace rummy::nn {
         return hasAll;
     }
 
-    bool NNPlayer::run_turn(GameState *gs) {
+    bool NNPlayer::run_turn(GameState& gs) {
         m_hand.sort();
 
         utils::LegalMoveEngine moveEngine(gs, m_hand);
@@ -30,18 +30,18 @@ namespace rummy::nn {
         if (const auto draw = msp_logic->get_draw(moveEngine.get_discard_pile_mask()); draw == 0) {
             draw_from_stock(gs, 1);
             try_play_cards(play_cards, moveEngine);
-        } else if (draw == gs->discardPile.size()) {
+        } else if (draw == gs.discardPile.size()) {
             draw_from_discard(gs, 1);
             try_play_cards(play_cards, moveEngine);
         } else {
-            play_cards = msp_logic->get_play_cards(moveEngine.get_hand_play_mask(gs->discardPile.get_card(draw - 1)->get_sort_value()));
-            try_play_cards(play_cards, gs->discardPile.get_card(gs->discardPile.size() - draw - 1), moveEngine);
+            play_cards = msp_logic->get_play_cards(moveEngine.get_hand_play_mask(gs.discardPile.get_card(draw - 1).get_sort_value()));
+            try_play_cards(play_cards, gs.discardPile.get_card(gs.discardPile.size() - draw - 1), moveEngine);
             if (!m_ToPlay.empty()) {
-                if (!draw_from_discard(gs, gs->discardPile.size() - draw)) return false;
+                if (!draw_from_discard(gs, gs.discardPile.size() - draw)) return false;
                 // Add the recently drawn card to the meld
                 //m_ToPlay.back().add_card(m_WorkingMeld.get_card(m_WorkingMeld.size() - 1));
                 // cout << "successfully drew from discard and played!" << endl;
-                if (gs->discardPile.size() - draw != 1)
+                if (gs.discardPile.size() - draw != 1)
                     m_WorkingMeld.dump(m_hand, 1);
             } else {
                 draw_from_stock(gs, 1);
@@ -73,6 +73,9 @@ namespace rummy::nn {
             }
         }
 
+        auto numCards = gs.get_num_cards();
+        assert(numCards == 52 && "We have spawned a card");
+
         for (int i = 0; i < m_hand.size(); i++) {
             if (m_hand.get_card(i) == toDiscard)
                 return discard(gs, i);
@@ -103,9 +106,9 @@ namespace rummy::nn {
         }
     }
 
-    void NNPlayer::try_play_cards(const std::vector<uint8_t>& cards, const shared_ptr<Card>& fromDiscard, utils::LegalMoveEngine& moveEngine) {
+    void NNPlayer::try_play_cards(const std::vector<uint8_t>& cards, const Card& fromDiscard, utils::LegalMoveEngine& moveEngine) {
         m_ToPlay.clear();
-        std::vector<std::vector<uint8_t>> possibleMelds = moveEngine.get_playable_melds(fromDiscard->get_sort_value());
+        std::vector<std::vector<uint8_t>> possibleMelds = moveEngine.get_playable_melds(fromDiscard.get_sort_value());
         for (auto& m : possibleMelds) {
             sort(m.begin(), m.end(), std::less<>());
             if (includes(cards.begin(), cards.end(), m.begin(), m.end())) {
@@ -121,7 +124,7 @@ namespace rummy::nn {
         }
     }
 
-    void NNPlayer::add_to_working_meld(const shared_ptr<Card>& card) {
+    void NNPlayer::add_to_working_meld(const Card& card) {
         m_WorkingMeld.add_card(card);
         for (int i = 0; i < m_hand.size(); i++) {
             if (m_hand.get_card(i) == card) {
@@ -131,7 +134,7 @@ namespace rummy::nn {
         }
     }
 
-    void NNPlayer::random_turn(GameState *gs) {
+    void NNPlayer::random_turn(GameState& gs) {
         draw_from_stock(gs, 1);
 
         // Discard a random card

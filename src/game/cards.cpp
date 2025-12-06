@@ -4,20 +4,19 @@
 
 #include "cards.h"
 
-#include <memory>
 #include <random>
 #include <algorithm>
 #include "../nn/nn_logic.h"
-#include <csignal>
 
 namespace rummy {
-    bool cmp_cards(const std::shared_ptr<Card>& c1, const std::shared_ptr<Card>& c2) {
-        return c1->get_sort_value() < c2->get_sort_value();
+    bool cmp_cards(const Card& c1, const Card& c2) {
+        return c1.get_sort_value() < c2.get_sort_value();
     }
 
     uint8_t Card::get_sort_value() const {
-        return static_cast<uint8_t>(suit * 13) + value;
+        return static_cast<uint8_t>(suit) * 13 + value;
     }
+
 
     string Card::to_string() const {
         string str;
@@ -41,16 +40,16 @@ namespace rummy {
         }
 
         switch (suit) {
-            case CLUBS:
+            case Suit::CLUBS:
                 str += "C";
                 break;
-            case DIAMONDS:
+            case Suit::DIAMONDS:
                 str += "D";
                 break;
-            case SPADES:
+            case Suit::SPADES:
                 str += "S";
                 break;
-            case HEARTS:
+            case Suit::HEARTS:
                 str += "H";
                 break;
         }
@@ -58,7 +57,7 @@ namespace rummy {
         return str;
     }
 
-    unsigned short Card::get_point_value() const {
+    uint16_t Card::get_point_value() const {
         switch (value) {
             case 1:
                 return 15;
@@ -76,32 +75,30 @@ namespace rummy {
 
         v = 0;
 
-        v(0, suit) = 1;
+        v(0, static_cast<int64_t>(suit)) = 1;
         v(0, 3 + value) = 1;
 
         return v;
+    }
+
+    bool Card::operator==(const Card &other) const {
+        return value == other.value && suit == other.suit;
     }
 
     Pile get_full_deck() {
         Pile p{};
 
         for (unsigned char i = 1; i <= 13; i++) {
-            p.add_card(std::make_shared<Card>(Card{SPADES, i}));
-            p.add_card(std::make_shared<Card>(Card{HEARTS, i}));
-            p.add_card(std::make_shared<Card>(Card{CLUBS, i}));
-            p.add_card(std::make_shared<Card>(Card{DIAMONDS, i}));
+            p.add_card({Suit::SPADES, i});
+            p.add_card({Suit::HEARTS, i});
+            p.add_card({Suit::CLUBS, i});
+            p.add_card({Suit::DIAMONDS, i});
         }
 
         return p;
     }
 
-    Pile::Pile() {
-        m_cards = std::vector<std::shared_ptr<Card>>{};
-    }
-
-    Pile::~Pile() = default;
-
-    void Pile::add_card(const std::shared_ptr<Card>& card) {
+    void Pile::add_card(const Card& card) {
         m_cards.push_back(card);
     }
 
@@ -144,28 +141,28 @@ namespace rummy {
 
     std::string Pile::to_string() const {
         return std::accumulate(m_cards.begin(), m_cards.end(), std::string{}, [](const auto& str, const auto& card) {
-            return str + " " + card->to_string();
+            return str + " " + card.to_string();
         });
     }
 
     uint16_t Pile::get_value() const {
         return std::accumulate(m_cards.begin(), m_cards.end(), 0u, [](uint16_t sum, const auto& card) {
-            return sum + card->get_point_value();
+            return sum + card.get_point_value();
         });
     }
 
-    std::vector<std::shared_ptr<Card>> Pile::get_cards() const {
+    std::vector<Card> Pile::get_cards() const {
         std::vector c(m_cards);
         return c;
     }
 
-    std::shared_ptr<Card> Pile::get_card(const unsigned char index) const {
+    Card Pile::get_card(const unsigned char index) const {
         if (index > m_cards.size())
             throw runtime_error("Tried to get a card with an out of bounds index");
         return m_cards.at(index);
     }
 
-    void Pile::set_cards(const std::vector<shared_ptr<Card> > &cards) {
+    void Pile::set_cards(const std::vector<Card>& cards) {
         m_cards.clear();
         m_cards.insert(m_cards.begin(), cards.begin(), cards.end());
     }

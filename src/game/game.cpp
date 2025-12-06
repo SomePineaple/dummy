@@ -13,8 +13,8 @@ namespace rummy {
     GameState::GameState(const shared_ptr<Player>& p, const shared_ptr<Player>& o) :
             opponent(o), player(p), stockPile(get_full_deck()) {
         stockPile.shuffle();
-        player->draw_from_stock(this, 13);
-        opponent->draw_from_stock(this, 13);
+        player->draw_from_stock(*this, 13);
+        opponent->draw_from_stock(*this, 13);
         stockPile.dump(discardPile, 1);
     }
 
@@ -60,7 +60,7 @@ namespace rummy {
     void Game::run_round() {
         auto backupState = make_unique<GameState>(m_gs.get());
 
-        if (!m_gs->player->run_turn(m_gs.get())) {
+        if (!m_gs->player->run_turn(*m_gs)) {
             m_gs.swap(backupState);
         } else {
             swap(m_gs->player, m_gs->opponent);

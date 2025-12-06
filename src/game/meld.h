@@ -18,7 +18,7 @@ namespace rummy {
         Meld();
         [[nodiscard]] MeldType get_meld_type() const;
         bool try_build_from(Meld* other);
-        [[nodiscard]] std::vector<shared_ptr<Card>> get_cards() const override;
+        [[nodiscard]] std::vector<Card> get_cards() const override;
     };
 } // game
 

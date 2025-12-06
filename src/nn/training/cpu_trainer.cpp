@@ -47,9 +47,9 @@ namespace rummy::nn {
 
         do {
             auto backupGs = std::make_unique<GameState>(gs.get());
-            if (!gs->player->run_turn(gs.get())) {
+            if (!gs->player->run_turn(*gs)) {
                 swap(gs, backupGs);
-                static_pointer_cast<NNPlayer>(gs->player)->random_turn(gs.get());
+                static_pointer_cast<NNPlayer>(gs->player)->random_turn(*gs);
                 score += m_BadMoveReward;
                 numIllegalMoves++;
             }
@@ -64,8 +64,8 @@ namespace rummy::nn {
         //p2 = static_pointer_cast<rn::NNPlayer>(p1IsPlayer ? gs->opponent : gs->player);
 
         // Give a bonus for playing melds.
-        score += static_cast<int>(p1->print_melds().length()) * 20;
-        score += p1->calc_points() - p2->calc_points();
+        score += static_cast<int>(p1->print_melds().length()) * 5;
+        score += (p1->calc_points() - p2->calc_points()) / 2;
         return {score, p1->print_melds().size() / 3.0, static_cast<float>(numIllegalMoves) / gameLength, p1->get_unplayed_points()};
     }
 
@@ -79,11 +79,9 @@ namespace rummy::nn {
                 metrics_t metrics;
                 auto& [score, playedMelds, illegalRate, unplayedCards] = metrics;
                 dlib::rand rnd;
-                // Clone NNLogic to avoid memory races.
-                const auto a = std::make_shared<NNLogic>(*network);
                 // Play against rule bot 25 times.
                 for (int j = 0; j < 25; j++) {
-                    auto [gameScore, gamePlayedMelds, gameIllegalRate, gameUnplayedCards] = test_networks(a);
+                    auto [gameScore, gamePlayedMelds, gameIllegalRate, gameUnplayedCards] = test_networks(network);
                     score += gameScore;
                     playedMelds += gamePlayedMelds;
                     illegalRate += gameIllegalRate;

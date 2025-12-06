@@ -66,7 +66,7 @@ namespace rummy::nn {
         NNLogic(const NNLogic& mutateFrom, float mutationChance);
         NNLogic(const NNLogic& from);
         NNLogic(const string& loadPath, float mutationRate);
-        void init_gs(const GameState* gs);
+        void init_gs(const GameState& gs);
 
         // returns 0 to draw from stock, and anything more is how many to draw from discard.
         uint8_t get_draw(const std::vector<bool>& discardMask) const;

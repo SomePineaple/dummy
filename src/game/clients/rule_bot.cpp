@@ -9,12 +9,12 @@
 namespace rummy::clients {
     static std::mt19937 rng(std::random_device{}());
 
-    bool has_all(const vector<shared_ptr<Card>>& a, const vector<shared_ptr<Card>>& b) {
+    bool has_all(const vector<Card>& a, const vector<Card>& b) {
         bool hasAll = true;
         for (const auto& card : b) {
             bool hasOne = false;
             for (const auto& c : a) {
-                hasOne = hasOne || c->get_sort_value() == card->get_sort_value();
+                hasOne = hasOne || c.get_sort_value() == card.get_sort_value();
             }
 
             hasAll = hasAll && hasOne;
@@ -23,7 +23,7 @@ namespace rummy::clients {
         return hasAll;
     }
 
-    bool RuleBot::run_turn(GameState *gs) {
+    bool RuleBot::run_turn(GameState& gs) {
         m_ToPlay.clear();
         utils::LegalMoveEngine moveEngine(gs, m_hand);
         std::uniform_real_distribution<float> chance(0, 1);
@@ -40,9 +40,9 @@ namespace rummy::clients {
                 // 50% chance of each drawable discard. Makes it more likely to draw earlier ones and not take too many cards
                 if (discardMask[i] && chance(rng) < 0.5) {
                     if (m_verbose)
-                        cout << "We are drawing the " << gs->discardPile.get_card(i)->to_string() << " from discard" << endl;
+                        cout << "We are drawing the " << gs.discardPile.get_card(i).to_string() << " from discard" << endl;
                     draw_from_discard(gs, discardMask.size() - i);
-                    drawn = (i == discardMask.size() - 1 ? m_hand.get_card(m_hand.size() - 1)->get_sort_value() :  m_WorkingMeld.get_card(0)->get_sort_value());
+                    drawn = (i == discardMask.size() - 1 ? m_hand.get_card(m_hand.size() - 1).get_sort_value() :  m_WorkingMeld.get_card(0).get_sort_value());
                     if (i != discardMask.size() - 1)
                         m_WorkingMeld.dump(m_hand, 1);
                     break;
@@ -56,7 +56,7 @@ namespace rummy::clients {
             }
         }
 
-        if (drawn && drawn != m_hand.get_card(m_hand.size() - 1)->get_sort_value()) {
+        if (drawn && drawn != m_hand.get_card(m_hand.size() - 1).get_sort_value()) {
             const auto playableMelds = moveEngine.get_playable_melds(drawn);
             try_play_cards(playableMelds[0], m_WorkingMeld.get_card(0));
         } else {
@@ -94,7 +94,7 @@ namespace rummy::clients {
             std::uniform_int_distribution<uint8_t> toDiscard(0, m_hand.size() - 1);
             const uint8_t d = toDiscard(rng);
             if (m_verbose)
-                cout << "We are discarding " << m_hand.get_card(d)->to_string() << endl;
+                cout << "We are discarding " << m_hand.get_card(d).to_string() << endl;
             discard(gs, d);
         }
 
@@ -111,7 +111,7 @@ namespace rummy::clients {
         m_ToPlay.push_back(m);
     }
 
-    void RuleBot::try_play_cards(const std::vector<uint8_t>& cards, const shared_ptr<Card>& fromDiscard) {
+    void RuleBot::try_play_cards(const std::vector<uint8_t>& cards, const Card& fromDiscard) {
         Meld meld;
         meld.add_card(fromDiscard);
         for (const auto& card : cards) {
@@ -121,7 +121,7 @@ namespace rummy::clients {
         m_ToPlay.push_back(meld);
     }
 
-    void RuleBot::add_to_working_meld(const shared_ptr<Card>& card) {
+    void RuleBot::add_to_working_meld(const Card& card) {
         m_WorkingMeld.add_card(card);
         for (int i = 0; i < m_hand.size(); i++) {
             if (m_hand.get_card(i) == card) {

@@ -10,10 +10,7 @@
 #include "../game.h"
 
 namespace rummy::clients {
-    bool ConsolePlayer::run_turn(GameState* gs) {
-        if (gs == nullptr)
-            return false;
-
+    bool ConsolePlayer::run_turn(GameState& gs) {
         bool hasDiscarded = false;
         print_game_state(gs);
         cout << boost::format("You are %s\nType:\n[S] to draw from stock\n[D] to draw from discard\n") % m_name << endl;
@@ -24,7 +21,7 @@ namespace rummy::clients {
             case 's':
             case 'S':
                 if (!draw_from_stock(gs, 1)) return false;
-                cout << "You drew: " << m_hand.get_card(m_hand.size() - 1)->to_string() << endl;
+                cout << "You drew: " << m_hand.get_card(m_hand.size() - 1).to_string() << endl;
                 m_hand.sort();
                 break;
             case 'd':
@@ -56,7 +53,7 @@ namespace rummy::clients {
                         cout << "Cannot play the current meld, it is invalid.\n";
                     break;
                 case 'A':
-                    ask_and_add(gs);
+                    ask_and_add();
                     break;
                 case 'Q':
                     break;
@@ -68,25 +65,25 @@ namespace rummy::clients {
         return hasDiscarded && m_WorkingMeld.size() == 0;
     }
 
-    bool ConsolePlayer::ask_and_discard(GameState* gs) {
+    bool ConsolePlayer::ask_and_discard(GameState& gs) {
         cout << "Which card would you like to discard?" << endl;
         string response;
         cin >> response;
 
         for (int i = 0; i < m_hand.size(); i++) {
-            if (m_hand.get_card(i)->to_string() == response)
+            if (m_hand.get_card(i).to_string() == response)
                 return discard(gs, i);
         }
 
         return false;
     }
 
-    void ConsolePlayer::ask_and_add(GameState *gs) {
+    void ConsolePlayer::ask_and_add() {
         cout << "Which card would you like to add?" << endl;
         string response;
         cin >> response;
         for (int i = 0; i < m_hand.size(); i++) {
-            if (m_hand.get_card(i)->to_string() == response) {
+            if (m_hand.get_card(i).to_string() == response) {
                 add_to_working_meld(i);
                 return;
             }
@@ -95,11 +92,11 @@ namespace rummy::clients {
         cout << "that was not a valid card.\n";
     }
 
-    void ConsolePlayer::print_game_state(const GameState* gs) const {
-        cout << boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->get_hand_size());
-        cout << gs->opponent->print_melds();
+    void ConsolePlayer::print_game_state(const GameState& gs) const {
+        cout << boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs.opponent->get_hand_size());
+        cout << gs.opponent->print_melds();
 
-        cout << boost::format("Discard pile:\n%s\n") % gs->discardPile.to_string();
+        cout << boost::format("Discard pile:\n%s\n") % gs.discardPile.to_string();
         cout << boost::format("Your hand:\n%s\n") % m_hand.to_string();
         cout << boost::format("Current building a meld:\n%s\n") % m_WorkingMeld.to_string();
         cout << "You have played:\n";

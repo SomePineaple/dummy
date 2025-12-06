@@ -13,12 +13,12 @@ namespace rummy::clients {
         bool m_verbose;
 
         void try_play_cards(const std::vector<uint8_t>& cards);
-        void try_play_cards(const std::vector<uint8_t>& cards, const shared_ptr<Card>& fromDiscard);
-        void add_to_working_meld(const shared_ptr<Card>& card);
+        void try_play_cards(const std::vector<uint8_t>& cards, const Card& fromDiscard);
+        void add_to_working_meld(const Card& card);
     public:
         explicit RuleBot(const bool verbose = false) : m_verbose(verbose) {}
 
-        bool run_turn(GameState *gs) override;
+        bool run_turn(GameState& gs) override;
         std::shared_ptr<Player> clone() const override;
     };
 } // rummy::clients

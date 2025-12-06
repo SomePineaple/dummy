@@ -34,11 +34,11 @@ constexpr uint16_t NUM_GENERATIONS = 200;
 }*/
 
 int main() {
-    rummy::nn::CpuTrainer trainer(MAX_GAME_LENGTH, GENERATION_SIZE, BAD_MOVE_REWARD, std::thread::hardware_concurrency(), 1, 0.1);
+    rummy::nn::CpuTrainer trainer(MAX_GAME_LENGTH, GENERATION_SIZE, BAD_MOVE_REWARD, std::thread::hardware_concurrency(), 1, 0.05);
     for (uint16_t i = 0; i < NUM_GENERATIONS; i++) {
         std::cout << "Testing generation " << i << std::endl;
         trainer.test_generation();
-        trainer.evolve(80, 25);
+        trainer.evolve(GENERATION_SIZE * 0.1, GENERATION_SIZE * 0.1);
 
         // Save the top 5 networks every 10 generations
         if (!(i % 10)) {

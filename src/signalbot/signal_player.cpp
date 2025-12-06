@@ -28,19 +28,13 @@ int rand_int() {
 }
 
 namespace rummy::clients {
-    SignalPlayer::SignalPlayer(const std::string& playerNumber, const std::string& botNumber) : m_PhoneNumber(playerNumber) {
-        m_ctx = make_shared<asio::io_context>();
-
-        // I don't know why, but make_shared just doesn't work here, it can't find the contrstructor
-        m_SignalCli = shared_ptr<bp::popen>(new bp::popen(*m_ctx, env::find_executable("signal-cli"), {"-a", botNumber, "jsonRpc"}));
-
+    SignalPlayer::SignalPlayer(const std::string& playerNumber, const std::string& botNumber)
+    : m_PhoneNumber(playerNumber), m_ctx(make_shared<asio::io_context>()), m_SignalCli(new boost::process::popen(*m_ctx, env::find_executable("signal-cli"), {"-a", botNumber, "jsonRpc"}))
+    {
         send_user_message("Someone would like to play a game of Rummy with you! (respond [kill] to any prompt to stop the game)");
     }
 
-    bool SignalPlayer::run_turn(GameState* gs) {
-        if (gs == nullptr)
-            return false;
-
+    bool SignalPlayer::run_turn(GameState& gs) {
         bool hasDrawn = false;
         do {
             send_game_state(gs);
@@ -49,7 +43,7 @@ namespace rummy::clients {
             if (userResponse == "Stock") {
                 if (!draw_from_stock(gs, 1)) return false;
 
-                send_user_message((boost::format("You just drew %s") % m_hand.get_cards().back()->to_string()).str());
+                send_user_message((boost::format("You just drew %s") % m_hand.get_cards().back().to_string()).str());
                 m_hand.sort();
                 hasDrawn = true;
             } else if (userResponse == "Discard") {
@@ -93,11 +87,11 @@ namespace rummy::clients {
         return false;
     }
 
-    bool SignalPlayer::ask_and_discard(GameState* gs) {
+    bool SignalPlayer::ask_and_discard(GameState& gs) {
         send_user_message("Which card would you like to discard?");
         string userResponse = receive_user_message();
         for (int i = 0; i < m_hand.size(); i++) {
-            if (m_hand.get_card(i)->to_string() == userResponse) {
+            if (m_hand.get_card(i).to_string() == userResponse) {
                 return discard(gs, i);
             }
         }
@@ -109,18 +103,18 @@ namespace rummy::clients {
         send_user_message("Which card would you like to add?");
         string userResponse = receive_user_message();
         for (int i = 0; i < m_hand.size(); i++) {
-            if (m_hand.get_card(i)->to_string() == userResponse) {
+            if (m_hand.get_card(i).to_string() == userResponse) {
                 if (!add_to_working_meld(i))
                     send_user_message("That was not a valid card.");
             }
         }
     }
 
-    void SignalPlayer::send_game_state(const GameState* gs) const {
+    void SignalPlayer::send_game_state(const GameState& gs) const {
         string message;
-        message += (boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs->opponent->get_hand_size())).str();
-        message += gs->opponent->print_melds();
-        message += (boost::format("Discard pile:\n%s\n") % gs->discardPile.to_string()).str();
+        message += (boost::format("Your opponent has %i cards, and has played:\n") % static_cast<int>(gs.opponent->get_hand_size())).str();
+        message += gs.opponent->print_melds();
+        message += (boost::format("Discard pile:\n%s\n") % gs.discardPile.to_string()).str();
         message += (boost::format("Your hand:\n%s\n") % m_hand.to_string()).str();
         message += (boost::format("Current building a meld:\n%s\n") % m_WorkingMeld.to_string()).str();
         message += (boost::format("You have played:\n%s\n") % print_melds()).str();
