@@ -51,8 +51,8 @@ namespace rummy::nn {
         static constexpr uint16_t PLAY_OFFSET = 26;
         static constexpr float PLAY_ACTIVATION_FLOOR = 0.5;
 
-        shared_ptr<embedder_t> msp_embedder;
-        shared_ptr<actor_t> msp_actor;
+        std::shared_ptr<embedder_t> msp_embedder;
+        std::shared_ptr<actor_t> msp_actor;
         // the key is the sort value of the cards.
         std::unordered_map<uint8_t, embed_output_t> embeddings{};
         matrix<float, 1, NET_OUTPUT_SIZE> net_output;
@@ -62,17 +62,17 @@ namespace rummy::nn {
         embed_output_t get_card_embedding(const Card& c);
     public:
         explicit NNLogic(float mutationRate);
-        NNLogic(const shared_ptr<embedder_t>& e, const shared_ptr<actor_t>& n);
+        NNLogic(const std::shared_ptr<embedder_t>& e, const std::shared_ptr<actor_t>& n);
         NNLogic(const NNLogic& mutateFrom, float mutationChance);
         NNLogic(const NNLogic& from);
-        NNLogic(const string& loadPath, float mutationRate);
+        NNLogic(const std::string& loadPath, float mutationRate);
         void init_gs(const GameState& gs);
 
         // returns 0 to draw from stock, and anything more is how many to draw from discard.
         uint8_t get_draw(const std::vector<bool>& discardMask) const;
         std::vector<uint8_t> get_play_cards(const std::vector<bool>& playMask) const;
         uint8_t get_discard(uint16_t handSize) const;
-        void write_to_file(const string& prefix) const;
+        void write_to_file(const std::string& prefix) const;
     };
 } // rummy::nn
 

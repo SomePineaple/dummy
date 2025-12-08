@@ -9,6 +9,7 @@
 #include "../../game/clients/rule_bot.h"
 
 namespace ba = boost::asio;
+using namespace std;
 
 namespace rummy::nn {
     CpuTrainer::CpuTrainer(const uint16_t maxGameLength, const uint16_t generationSize, const uint16_t badMoveReward, const uint32_t maxThreads, const float mutationChance, const float mutationStrength) :

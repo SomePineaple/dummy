@@ -6,7 +6,6 @@
 #define DUMMY_PLAYER_H
 
 #include "../meld.h"
-#include <string>
 #include <memory>
 
 namespace rummy {
@@ -29,7 +28,7 @@ namespace rummy::clients {
 
         bool draw_from_stock(GameState& gs, uint8_t numCards);
         int16_t calc_points();
-        [[nodiscard]] string print_melds() const;
+        [[nodiscard]] std::string print_melds() const;
         [[nodiscard]] uint8_t get_hand_size() const;
         [[nodiscard]] Card get_card(uint8_t index) const;
 

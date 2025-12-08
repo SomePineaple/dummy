@@ -6,6 +6,7 @@
 #include <algorithm>
 
 namespace rummy {
+    using namespace std;
     bool is_valid_set(const vector<Card>& cards) {
         if (cards.size() < 3) return false;
 

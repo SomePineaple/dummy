@@ -12,24 +12,27 @@
 #include <random>
 #include <boost/asio.hpp>
 #include <stdexcept>
+#include <utility>
 #include "../game/game.h"
 
 using json = nlohmann::json;
-namespace asio = boost::asio;
+namespace ba = boost::asio;
 namespace bp = boost::process;
-namespace env = bp::environment;
+namespace be = bp::environment;
+
+using namespace std;
 
 int rand_int() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distrib(1, 10000);
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> distrib(1, 10000);
 
     return distrib(gen);
 }
 
 namespace rummy::clients {
-    SignalPlayer::SignalPlayer(const std::string& playerNumber, const std::string& botNumber)
-    : m_PhoneNumber(playerNumber), m_ctx(make_shared<asio::io_context>()), m_SignalCli(new boost::process::popen(*m_ctx, env::find_executable("signal-cli"), {"-a", botNumber, "jsonRpc"}))
+    SignalPlayer::SignalPlayer(string  playerNumber, const string& botNumber)
+    : m_PhoneNumber(std::move(playerNumber)), m_ctx(make_shared<ba::io_context>()), m_SignalCli(new bp::popen(*m_ctx, be::find_executable("signal-cli"), {"-a", botNumber, "jsonRpc"}))
     {
         send_user_message("Someone would like to play a game of Rummy with you! (respond [kill] to any prompt to stop the game)");
     }
@@ -39,8 +42,7 @@ namespace rummy::clients {
         do {
             send_game_state(gs);
             send_user_message("Send:\n[Stock] to draw from stock\n[Discard] to draw from discard");
-            string userResponse = receive_user_message();
-            if (userResponse == "Stock") {
+            if (const string userResponse = receive_user_message(); userResponse == "Stock") {
                 if (!draw_from_stock(gs, 1)) return false;
 
                 send_user_message((boost::format("You just drew %s") % m_hand.get_cards().back().to_string()).str());
@@ -101,7 +103,7 @@ namespace rummy::clients {
 
     void SignalPlayer::ask_and_add() {
         send_user_message("Which card would you like to add?");
-        string userResponse = receive_user_message();
+        const string userResponse = receive_user_message();
         for (int i = 0; i < m_hand.size(); i++) {
             if (m_hand.get_card(i).to_string() == userResponse) {
                 if (!add_to_working_meld(i))
@@ -124,7 +126,7 @@ namespace rummy::clients {
 
     void SignalPlayer::send_user_message(const string& message) const {
         int messageId = rand_int();
-        json req = {
+        const json req = {
             {"jsonrpc", "2.0"},
             {"method", "send"},
             {"params", {{"message", message}, {"recipient", m_PhoneNumber}, {"expiresInSeconds", 3600}}},
@@ -133,14 +135,14 @@ namespace rummy::clients {
 
         cout << "Sending message..." << endl;
 
-        asio::write(*m_SignalCli, asio::buffer(req.dump() + '\n'));
+        ba::write(*m_SignalCli, ba::buffer(req.dump() + '\n'));
 
         // Wait for signal-cli to confirm the message was sent.
         bool receivedResult = false;
         while (!receivedResult) {
             cout << "awaiting response..." << endl;
             string response;
-            asio::read_until(*m_SignalCli, asio::dynamic_buffer(response), "}\n");
+            ba::read_until(*m_SignalCli, ba::dynamic_buffer(response), "}\n");
             json res;
             try {
                 res = json::parse(response);
@@ -164,12 +166,12 @@ namespace rummy::clients {
     }
 
     // Waits for the user to send a proper dataMessage and returns it
-    std::string SignalPlayer::receive_user_message() {
+    string SignalPlayer::receive_user_message() {
         bool receivedMessage = false;
         string message;
         while (!receivedMessage) {
             string in;
-            asio::read_until(*m_SignalCli, asio::dynamic_buffer(in), '\n');
+            ba::read_until(*m_SignalCli, ba::dynamic_buffer(in), '\n');
             auto res = json::parse(in);
             if (res.contains("method") && res["method"] == "receive" && res["params"]["envelope"].contains("dataMessage")) {
                 auto envelope = res["params"]["envelope"];
@@ -188,7 +190,7 @@ namespace rummy::clients {
         return message;
     }
 
-    std::shared_ptr<Player> SignalPlayer::clone() const {
+    shared_ptr<Player> SignalPlayer::clone() const {
         return make_shared<SignalPlayer>(*this);
     }
 

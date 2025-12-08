@@ -18,8 +18,8 @@ namespace rummy {
     }
 
 
-    string Card::to_string() const {
-        string str;
+    std::string Card::to_string() const {
+        std::string str;
 
         switch (value) {
             case 1:
@@ -158,7 +158,7 @@ namespace rummy {
 
     Card Pile::get_card(const unsigned char index) const {
         if (index > m_cards.size())
-            throw runtime_error("Tried to get a card with an out of bounds index");
+            throw std::runtime_error("Tried to get a card with an out of bounds index");
         return m_cards.at(index);
     }
 

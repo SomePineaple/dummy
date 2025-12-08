@@ -7,6 +7,8 @@
 #include <random>
 
 namespace rummy::clients {
+    using namespace std;
+
     static std::mt19937 rng(std::random_device{}());
 
     bool has_all(const vector<Card>& a, const vector<Card>& b) {

@@ -96,7 +96,7 @@ namespace rummy::clients {
     }
 
     std::shared_ptr<Player> Player::clone() const {
-        return make_shared<Player>(*this);
+        return std::make_shared<Player>(*this);
     }
 
     void Player::close(){}

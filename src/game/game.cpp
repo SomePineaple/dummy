@@ -9,6 +9,7 @@
 
 namespace rummy {
     using namespace clients;
+    using namespace std;
 
     GameState::GameState(const shared_ptr<Player>& p, const shared_ptr<Player>& o) :
             opponent(o), player(p), stockPile(get_full_deck()) {
@@ -51,10 +52,10 @@ namespace rummy {
 
     GameStatus Game::is_game_over() const {
         if (m_p1->get_hand_size() == 0 || m_p2->get_hand_size() == 0 || m_gs->stockPile.size() == 0) {
-            return m_p1->calc_points() > m_p2->calc_points() ? P1_WINS : P2_WINS;
+            return m_p1->calc_points() > m_p2->calc_points() ? GameStatus::P1_WINS : GameStatus::P2_WINS;
         }
 
-        return NOT_OVER;
+        return GameStatus::NOT_OVER;
     }
 
     void Game::run_round() {

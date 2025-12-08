@@ -9,10 +9,10 @@
 #include <random>
 
 namespace rummy::nn {
-    NNLogic::NNLogic(const string& loadPath, const float mutationRate) {
+    NNLogic::NNLogic(const std::string& loadPath, const float mutationRate) {
         m_mutationRate = mutationRate;
-        msp_embedder = make_shared<embedder_t>();
-        msp_actor = make_shared<actor_t>();
+        msp_embedder = std::make_shared<embedder_t>();
+        msp_actor = std::make_shared<actor_t>();
 
         deserialize(loadPath + "_embedder.bin") >> (*msp_embedder);
         deserialize(loadPath + "_actor.bin") >> (*msp_actor);
@@ -20,8 +20,8 @@ namespace rummy::nn {
 
     // If no parameters are passed in, we initialize everything with random distribution
     NNLogic::NNLogic(const float mutationRate) {
-        msp_embedder = make_shared<embedder_t>();
-        msp_actor = make_shared<actor_t>();
+        msp_embedder = std::make_shared<embedder_t>();
+        msp_actor = std::make_shared<actor_t>();
         m_mutationRate = mutationRate;
 
         // Ensure we have initialized weights
@@ -38,25 +38,25 @@ namespace rummy::nn {
         m_mutationRate = from.m_mutationRate;
 
         // Deep copy the networks
-        msp_embedder = make_shared<embedder_t>(*from.msp_embedder);
-        msp_actor = make_shared<actor_t>(*from.msp_actor);
+        msp_embedder = std::make_shared<embedder_t>(*from.msp_embedder);
+        msp_actor = std::make_shared<actor_t>(*from.msp_actor);
     }
 
     NNLogic::NNLogic(const NNLogic& mutateFrom, const float mutationChance) {
         dlib::rand rnd;
 
         // Use σ′=σ⋅exp(τz) to update the mutation rate.
-        m_mutationRate = static_cast<float>(clamp(mutateFrom.m_mutationRate * exp(LEARNING_RATE * rnd.get_random_gaussian()), 0.001, 0.1));
+        m_mutationRate = static_cast<float>(std::clamp(mutateFrom.m_mutationRate * exp(LEARNING_RATE * rnd.get_random_gaussian()), 0.001, 0.1));
 
-        msp_embedder = make_shared<embedder_t>(*mutateFrom.msp_embedder);
-        msp_actor = make_shared<actor_t>(*mutateFrom.msp_actor);
+        msp_embedder = std::make_shared<embedder_t>(*mutateFrom.msp_embedder);
+        msp_actor = std::make_shared<actor_t>(*mutateFrom.msp_actor);
 
         // Smaller mutation rate on the embedder so the actor doesn't go crazy because we change its input
         nn_helper::mutate_network(msp_embedder, m_mutationRate * 0.1f, mutationChance);
         nn_helper::mutate_network(msp_actor, m_mutationRate, mutationChance);
     }
 
-    NNLogic::NNLogic(const shared_ptr<embedder_t>& e, const shared_ptr<actor_t>& n) : msp_embedder(e), msp_actor(n) {
+    NNLogic::NNLogic(const std::shared_ptr<embedder_t>& e, const std::shared_ptr<actor_t>& n) : msp_embedder(e), msp_actor(n) {
         m_mutationRate = 0.01;
     }
 
@@ -134,7 +134,7 @@ namespace rummy::nn {
 
     uint8_t NNLogic::get_draw(const std::vector<bool>& discardMask) const {
         if (net_output.size() != NET_OUTPUT_SIZE) {
-            throw runtime_error("Network output has not been initialized");
+            throw std::runtime_error("Network output has not been initialized");
         }
 
         float max = net_output(0, 0);
@@ -152,7 +152,7 @@ namespace rummy::nn {
 
     std::vector<uint8_t> NNLogic::get_play_cards(const std::vector<bool>& playMask) const {
         if (net_output.size() != NET_OUTPUT_SIZE) {
-            throw runtime_error("Network output has not been initialized");
+            throw std::runtime_error("Network output has not been initialized");
         }
 
         std::vector<uint8_t> card_outputs;
@@ -166,15 +166,15 @@ namespace rummy::nn {
 
     uint8_t NNLogic::get_discard(const uint16_t handSize) const {
         if (net_output.size() != NET_OUTPUT_SIZE) {
-            throw runtime_error("Network output has not been initialized");
+            throw std::runtime_error("Network output has not been initialized");
         }
 
         // Location of discard output with the highest activation
-        const auto largest_location = max_element(net_output.begin() + DISCARD_OFFSET, net_output.begin() + min(static_cast<int>(NET_OUTPUT_SIZE), DISCARD_OFFSET + handSize));
+        const auto largest_location = std::max_element(net_output.begin() + DISCARD_OFFSET, net_output.begin() + std::min(static_cast<int>(NET_OUTPUT_SIZE), DISCARD_OFFSET + handSize));
         return largest_location - (net_output.begin() + DISCARD_OFFSET);
     }
 
-    void NNLogic::write_to_file(const string& prefix) const {
+    void NNLogic::write_to_file(const std::string& prefix) const {
         msp_embedder->clean();
         msp_actor->clean();
 

@@ -10,6 +10,7 @@
 #include "../game.h"
 
 namespace rummy::clients {
+    using namespace std;
     bool ConsolePlayer::run_turn(GameState& gs) {
         bool hasDiscarded = false;
         print_game_state(gs);

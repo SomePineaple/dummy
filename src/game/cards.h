@@ -10,7 +10,6 @@
 #include <dlib/matrix.h>
 
 namespace rummy {
-    using namespace std;
     enum class Suit {
         HEARTS, DIAMONDS, SPADES, CLUBS
     };
@@ -21,7 +20,7 @@ namespace rummy {
 
         [[nodiscard]] uint16_t get_point_value() const;
         [[nodiscard]] uint8_t get_sort_value() const;
-        [[nodiscard]] string to_string() const;
+        [[nodiscard]] std::string to_string() const;
         [[nodiscard]] dlib::matrix<float, 1, 17> one_hot() const;
 
         bool operator==(const Card& other) const;
@@ -36,9 +35,9 @@ namespace rummy {
 
         [[nodiscard]] uint8_t size() const;
         [[nodiscard]] Pile combine(const Pile* pile) const;
-        [[nodiscard]] string to_string() const;
+        [[nodiscard]] std::string to_string() const;
         [[nodiscard]] uint16_t get_value() const;
-        [[nodiscard]] virtual vector<Card> get_cards() const;
+        [[nodiscard]] virtual std::vector<Card> get_cards() const;
         [[nodiscard]] Card get_card(uint8_t index) const;
 
         void set_cards(const std::vector<Card>& cards);

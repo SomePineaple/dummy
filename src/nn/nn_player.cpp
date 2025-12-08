@@ -139,7 +139,7 @@ namespace rummy::nn {
 
         // Discard a random card
         static std::mt19937 rng(std::random_device{}());
-        uniform_int_distribution dist(0, m_hand.size() - 1);
+        std::uniform_int_distribution dist(0, m_hand.size() - 1);
 
         discard(gs, dist(rng));
     }
@@ -148,7 +148,7 @@ namespace rummy::nn {
         return m_hand.get_value();
     }
 
-    shared_ptr<clients::Player> NNPlayer::clone() const {
-        return make_shared<NNPlayer>(*this);
+    std::shared_ptr<clients::Player> NNPlayer::clone() const {
+        return std::make_shared<NNPlayer>(*this);
     }
 } // rummy::nn

@@ -9,20 +9,18 @@
 #include "clients/player.h"
 
 namespace rummy {
-    using namespace std;
-
-    enum GameStatus {
+    enum class GameStatus {
         NOT_OVER, P1_WINS, P2_WINS
     };
 
     struct GameState {
-        shared_ptr<clients::Player> opponent;
-        shared_ptr<clients::Player> player;
+        std::shared_ptr<clients::Player> opponent;
+        std::shared_ptr<clients::Player> player;
         Pile stockPile;
         Pile discardPile;
-        vector<shared_ptr<Meld>> melds;
+        std::vector<std::shared_ptr<Meld>> melds;
 
-        GameState(const shared_ptr<clients::Player>& p, const shared_ptr<clients::Player>& o);
+        GameState(const std::shared_ptr<clients::Player>& p, const std::shared_ptr<clients::Player>& o);
 
         explicit GameState(const GameState* clone);
 
@@ -30,12 +28,12 @@ namespace rummy {
     };
 
     class Game {
-        shared_ptr<clients::Player> m_p1;
-        shared_ptr<clients::Player> m_p2;
-        unique_ptr<GameState> m_gs;
+        std::shared_ptr<clients::Player> m_p1;
+        std::shared_ptr<clients::Player> m_p2;
+        std::unique_ptr<GameState> m_gs;
     public:
         explicit Game(const GameState& gs);
-        Game(const shared_ptr<clients::Player>& p1, const shared_ptr<clients::Player>& p2);
+        Game(const std::shared_ptr<clients::Player>& p1, const std::shared_ptr<clients::Player>& p2);
         void run_round();
         [[nodiscard]] GameStatus is_game_over() const;
         void notify_players() const;

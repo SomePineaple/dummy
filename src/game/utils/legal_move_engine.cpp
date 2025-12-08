@@ -5,17 +5,19 @@
 #include "legal_move_engine.h"
 
 namespace rummy::utils {
+    using namespace std;
+
     LegalMoveEngine::LegalMoveEngine(const GameState& gs, const Pile& hand) {
         update_no_draw(gs, hand);
         update_discard(gs, hand);
     }
 
     void LegalMoveEngine::update_no_draw(const GameState& gs, const Pile& hand) {
-        std::vector<bool> mask(hand.size());
-        std::vector<std::vector<uint8_t>> playableMelds;
+        vector<bool> mask(hand.size());
+        vector<vector<uint8_t>> playableMelds;
 
-        std::array<std::vector<uint8_t>, 4> suits;
-        std::array<std::vector<uint8_t>, 13> ranks;
+        array<vector<uint8_t>, 4> suits;
+        array<vector<uint8_t>, 13> ranks;
 
         for (int i = 0; i < hand.size(); i++) {
             const auto card = hand.get_card(i);
@@ -43,7 +45,7 @@ namespace rummy::utils {
                     suit.erase(suit.begin());
                 }
 
-                std::vector<uint8_t> buildingMeld;
+                vector<uint8_t> buildingMeld;
                 buildingMeld.push_back(suit[0]);
                 for (int i = 1; i < suit.size(); i++) {
                     if (hand.get_card(i).value == hand.get_card(i - 1).value + 1) {
@@ -110,10 +112,10 @@ namespace rummy::utils {
         for (int i = 0; i < m_DiscardMask.size(); i++) {
             const auto& card = gs.discardPile.get_card(i);
 
-            std::vector<bool> mask(hand.size());
+            vector<bool> mask(hand.size());
 
-            std::array<std::vector<uint8_t>, 4> suits;
-            std::array<std::vector<uint8_t>, 13> ranks;
+            array<vector<uint8_t>, 4> suits;
+            array<vector<uint8_t>, 13> ranks;
 
             for (int x = 0; x < hand.size(); x++) {
                 const auto c = hand.get_card(x);
@@ -121,7 +123,7 @@ namespace rummy::utils {
                 ranks[c.value - 1].push_back(x);
             }
 
-            std::vector<std::vector<uint8_t>> playableMelds;
+            vector<vector<uint8_t>> playableMelds;
 
             if (ranks[card.value - 1].size() >= 2) {
                 playableMelds.push_back(ranks[card.value - 1]);
@@ -144,7 +146,7 @@ namespace rummy::utils {
             }
 
             if (up1 != 100 && up2 != 100) {
-                std::vector<uint8_t> runVector;
+                vector<uint8_t> runVector;
                 runVector.push_back(up1);
                 runVector.push_back(up2);
                 playableMelds.push_back(runVector);
@@ -154,7 +156,7 @@ namespace rummy::utils {
             }
 
             if (down1 != 100 && down2 != 100) {
-                std::vector<uint8_t> runVector;
+                vector<uint8_t> runVector;
                 runVector.push_back(down2);
                 runVector.push_back(down1);
                 playableMelds.push_back(runVector);
@@ -164,7 +166,7 @@ namespace rummy::utils {
             }
 
             if (up1 != 100 && down1 != 100) {
-                std::vector<uint8_t> runVector;
+                vector<uint8_t> runVector;
                 runVector.push_back(down1);
                 runVector.push_back(up1);
                 playableMelds.push_back(runVector);
@@ -177,11 +179,11 @@ namespace rummy::utils {
         }
     }
 
-    std::vector<bool> LegalMoveEngine::get_hand_play_mask(const uint8_t withDraw) {
+    vector<bool> LegalMoveEngine::get_hand_play_mask(const uint8_t withDraw) {
         return get<1>(m_PlayableMeldsWithDraw[withDraw]);
     }
 
-    std::vector<std::vector<uint8_t>> LegalMoveEngine::get_playable_melds(const uint8_t withDraw) {
+    vector<vector<uint8_t>> LegalMoveEngine::get_playable_melds(const uint8_t withDraw) {
         /*auto v = get<0>(m_PlayableMeldsWithDraw[0]);
         if (withDraw)
             v.insert(v.end(), get<0>(m_PlayableMeldsWithDraw[withDraw]).begin(), get<0>(m_PlayableMeldsWithDraw[withDraw]).end());
@@ -189,7 +191,7 @@ namespace rummy::utils {
         return get<0>(m_PlayableMeldsWithDraw[withDraw]);
     }
 
-    std::vector<bool> LegalMoveEngine::get_discard_pile_mask() const {
+    vector<bool> LegalMoveEngine::get_discard_pile_mask() const {
         return m_DiscardMask;
     }
 

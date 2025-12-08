@@ -9,8 +9,8 @@
 using namespace rummy;
 
 int main() {
-    Game game{make_shared<clients::ConsolePlayer>("Player 1"), make_shared<clients::RuleBot>(true)};
-    while (game.is_game_over() == NOT_OVER)
+    Game game{std::make_shared<clients::ConsolePlayer>("Player 1"), std::make_shared<clients::RuleBot>(true)};
+    while (game.is_game_over() == GameStatus::NOT_OVER)
         game.run_round();
 
     game.notify_players();

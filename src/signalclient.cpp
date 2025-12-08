@@ -24,7 +24,7 @@ int main(const int numArgs, const char** args) {
     string botNumber = args[2];
 
     auto game = rummy::Game{make_shared<rc::SignalPlayer>(playerNumber, botNumber), make_shared<rc::ConsolePlayer>("Player 1")};
-    while (game.is_game_over() == rummy::NOT_OVER)
+    while (game.is_game_over() == rummy::GameStatus::NOT_OVER)
         game.run_round();
 
     game.notify_players();
