@@ -104,10 +104,10 @@ int main() {
         rummy::nn::actor_t actor;
         actor(actorInput);
 
-        uint64_t bytesPerInstance = (dlib::count_parameters(embedder) + dlib::count_parameters(actor)) * sizeof(float);
+        const uint64_t bytesPerInstance = (dlib::count_parameters(embedder) + dlib::count_parameters(actor)) * sizeof(float);
 
         // leave 500mb safety margin
-        generationSize = std::min(generationSize, (availableRam - (500 * 1024 * 1024) / bytesPerInstance));
+        generationSize = std::min(generationSize, (availableRam - (500 * 1024 * 1024)) / bytesPerInstance);
 
         std::cout << "We have " << availableRam << " bytes of ram available, limiting generation size to " << generationSize << std::endl;
     }
