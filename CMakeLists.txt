@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Try to take advantage of our cpu architecture
-set(CMAKE_CXX_FLAGS "-march=native")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 
 # Default to release build
 if(NOT CMAKE_BUILD_TYPE)
