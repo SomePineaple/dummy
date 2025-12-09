@@ -6,11 +6,10 @@
 #include <boost/test/unit_test.hpp>
 
 #include <nn/nn_logic.h>
-#include <nn/nn_player.h>
-#include <game/clients/rule_bot.h>
 
 #include <fstream>
-#include <iterator>
+
+#include "nn/training/cpu_trainer.h"
 
 bool files_are_equal(const std::string& path1, const std::string& path2)
 {
@@ -56,3 +55,19 @@ BOOST_AUTO_TEST_CASE(testEvolution) {
     BOOST_CHECK(!files_are_equal("1_actor.bin", "2_actor.bin"));
     BOOST_CHECK(!files_are_equal("1_embedder.bin", "2_embedder.bin"));
 }
+
+#ifdef PROFILE
+#include <ctrack.hpp>
+BOOST_AUTO_TEST_CASE(simpleProfiling) {
+    std::cout << "Running 5 generations to profile..." << std::endl;
+
+    rummy::nn::CpuTrainer trainer(50, 50, -5, std::thread::hardware_concurrency(), 1, 0.05);
+    for (int i = 0; i < 5; i++) {
+        trainer.test_generation();
+        trainer.evolve(10, 10);
+    }
+
+    ctrack::result_print();
+}
+
+#endif

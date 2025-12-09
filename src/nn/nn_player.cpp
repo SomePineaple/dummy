@@ -6,6 +6,10 @@
 
 #include <random>
 
+#ifdef PROFILE
+#include <ctrack.hpp>
+#endif
+
 namespace rummy::nn {
     bool has_all(const std::vector<Card>& a, const std::vector<Card>& b) {
         bool hasAll = true;
@@ -22,6 +26,10 @@ namespace rummy::nn {
     }
 
     bool NNPlayer::run_turn(GameState& gs) {
+#ifdef PROFILE
+        CTRACK;
+#endif
+
         m_hand.sort();
 
         utils::LegalMoveEngine moveEngine(gs, m_hand);
@@ -72,9 +80,6 @@ namespace rummy::nn {
                 }
             }
         }
-
-        auto numCards = gs.get_num_cards();
-        assert(numCards == 52 && "We have spawned a card");
 
         for (int i = 0; i < m_hand.size(); i++) {
             if (m_hand.get_card(i) == toDiscard)

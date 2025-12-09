@@ -8,6 +8,10 @@
 #include "../nn_player.h"
 #include "../../game/clients/rule_bot.h"
 
+#ifdef PROFILE
+#include <ctrack.hpp>
+#endif
+
 namespace ba = boost::asio;
 using namespace std;
 
@@ -35,6 +39,10 @@ namespace rummy::nn {
 
     // returns the score and the amount of melds played (just for progress logging)
     metrics_t CpuTrainer::test_networks(const Logic& net) const {
+#ifdef PROFILE
+        CTRACK;
+#endif
+
         int score = 0;
         uint64_t gameLength = 0;
         uint16_t numIllegalMoves = 0;
@@ -105,6 +113,9 @@ namespace rummy::nn {
     }
 
     void CpuTrainer::evolve(const uint16_t keepTop, const uint16_t introduceNew) {
+#ifdef PROFILE
+        CTRACK;
+#endif
         partial_sort(m_scoring.begin(), m_scoring.begin() + keepTop, m_scoring.end(), [](const auto& a, const auto& b) {
             return get<0>(get<1>(a)) > get<0>(get<1>(b));
         });

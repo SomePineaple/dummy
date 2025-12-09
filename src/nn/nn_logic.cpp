@@ -6,7 +6,10 @@
 
 #include "../game/game.h"
 #include "dlib_helper.h"
-#include <random>
+
+#ifdef PROFILE
+#include <ctrack.hpp>
+#endif
 
 namespace rummy::nn {
     NNLogic::NNLogic(const std::string& loadPath, const float mutationRate) {
@@ -61,6 +64,9 @@ namespace rummy::nn {
     }
 
     embed_output_t NNLogic::get_card_embedding(const Card& c) {
+#ifdef PROFILE
+        CTRACK;
+#endif
         const int key = c.get_sort_value();
         const auto it = embeddings.find(key);
         if (it == embeddings.end()) {
@@ -77,6 +83,9 @@ namespace rummy::nn {
     }
 
     void NNLogic::init_gs(const GameState& gs) {
+#ifdef PROFILE
+        CTRACK;
+#endif
         embed_output_t padding{};
         padding = 0;
 
@@ -133,6 +142,9 @@ namespace rummy::nn {
     }
 
     uint8_t NNLogic::get_draw(const std::vector<bool>& discardMask) const {
+#ifdef PROFILE
+        CTRACK;
+#endif
         if (net_output.size() != NET_OUTPUT_SIZE) {
             throw std::runtime_error("Network output has not been initialized");
         }
@@ -151,6 +163,9 @@ namespace rummy::nn {
     }
 
     std::vector<uint8_t> NNLogic::get_play_cards(const std::vector<bool>& playMask) const {
+#ifdef PROFILE
+        CTRACK;
+#endif
         if (net_output.size() != NET_OUTPUT_SIZE) {
             throw std::runtime_error("Network output has not been initialized");
         }
@@ -165,6 +180,9 @@ namespace rummy::nn {
     }
 
     uint8_t NNLogic::get_discard(const uint16_t handSize) const {
+#ifdef PROFILE
+        CTRACK;
+#endif
         if (net_output.size() != NET_OUTPUT_SIZE) {
             throw std::runtime_error("Network output has not been initialized");
         }
@@ -175,6 +193,9 @@ namespace rummy::nn {
     }
 
     void NNLogic::write_to_file(const std::string& prefix) const {
+#ifdef PROFILE
+        CTRACK;
+#endif
         msp_embedder->clean();
         msp_actor->clean();
 
