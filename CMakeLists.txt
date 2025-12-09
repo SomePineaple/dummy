@@ -12,10 +12,10 @@ endif()
 
 add_subdirectory(deps/njhomann/json)
 add_subdirectory(deps/boostorg/boost)
-
 add_subdirectory(deps/davisking/dlib)
 
-add_library(dummy_backend src/game/cards.cpp
+add_library(dummy_backend
+        src/game/cards.cpp
         src/game/cards.h
         src/game/meld.cpp
         src/game/meld.h

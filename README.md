@@ -4,11 +4,11 @@ This is a project that allows you to play the card game rummy 500 on the compute
 
 ## Building
 
-Clone the repo with `--recurse-submodules`, and then build with cmake. Simple. This generates a few binaries, `ai-trainer`, `console-client` and `signal-client`.
+Clone the repo with `--recurse-submodules`, and then build with cmake. For linux, make a directory called build, and run `cmake -S . -B build/ -G Ninja && cd build && ninja`. This generates a few binaries, `ai-trainer`, `console-client` and `signal-client`.
 
 ## Dependencies
 
-All are included as git submodules. The dependencies are dlib for deep learning, nlohmann's json for talking to signal-cli and boost for C++ utilities. However, to use the signal client, you will need a working installation of signa-cli in your path.
+All are included as git submodules. The dependencies are dlib for deep learning, nlohmann's json for talking to signal-cli and boost for C++ utilities. However, to use the signal client, you will need a working installation of signa-cli in your path. I also now use [ctrack](https://github.com/Compaile/ctrack) for a bit of profiling, this is a single header file included in the repository.
 
 ## Binaries
 

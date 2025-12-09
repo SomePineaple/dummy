@@ -11,8 +11,7 @@
 
 #include "nn/training/cpu_trainer.h"
 
-bool files_are_equal(const std::string& path1, const std::string& path2)
-{
+bool files_are_equal(const std::string& path1, const std::string& path2) {
     std::ifstream f1(path1, std::ios::binary);
     std::ifstream f2(path2, std::ios::binary);
     if (!f1 || !f2) return false;               // one of the files couldn't be opened
@@ -38,10 +37,6 @@ bool files_are_equal(const std::string& path1, const std::string& path2)
         if (!std::equal(buf1, buf1 + n1, buf2)) return false;
     }
     return true;
-}
-
-BOOST_AUTO_TEST_CASE(testOne) {
-    BOOST_CHECK_EQUAL(1, 1);
 }
 
 BOOST_AUTO_TEST_CASE(testEvolution) {
