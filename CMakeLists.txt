@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.26.5)
-project(dummy)
+project(dummy LANGUAGES CXX)
+
+include(FetchContent)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -13,9 +15,28 @@ if(NOT CMAKE_BUILD_TYPE)
             "Choose the type of build (Debug, Release, RelWithDebInfo, MinSizeRel)" FORCE)
 endif()
 
-add_subdirectory(deps/njhomann/json)
-add_subdirectory(deps/boostorg/boost)
-add_subdirectory(deps/davisking/dlib)
+FetchContent_Declare(json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG        v3.12.0
+        GIT_PROGRESS   TRUE
+        GIT_SHALLOW    TRUE
+        EXCLUDE_FROM_ALL
+)
+FetchContent_MakeAvailable(json)
+
+FetchContent_Declare(dlib
+    GIT_REPOSITORY https://github.com/davisking/dlib.git
+    GIT_TAG        v20.0
+    GIT_PROGRESS   TRUE
+    GIT_SHALLOW    TRUE
+    EXCLUDE_FROM_ALL
+)
+FetchContent_MakeAvailable(dlib)
+
+FetchContent_Declare(boost
+    URL https://github.com/boostorg/boost/releases/download/boost-1.90.0/boost-1.90.0-cmake.tar.gz
+)
+FetchContent_MakeAvailable(boost)
 
 add_library(dummy_backend
         src/game/cards.cpp
@@ -39,10 +60,11 @@ add_library(dummy_backend
         src/game/utils/legal_move_engine.h
         src/nn/training/cpu_trainer.cpp
         src/nn/training/cpu_trainer.h
+        src/nn/training/cmaes_trainer.h
 )
 
-target_link_libraries(dummy_backend PRIVATE boost_format dlib::dlib)
-target_include_directories(dummy_backend PRIVATE deps/boostorg/format/include deps/Compaile/ctrack PUBLIC deps/davisking/dlib/)
+target_link_libraries(dummy_backend PRIVATE boost_format PUBLIC dlib::dlib)
+target_include_directories(dummy_backend PRIVATE deps/Compaile/ctrack)
 
 # Enable profiling on debug builds
 target_compile_definitions(dummy_backend PRIVATE
@@ -53,20 +75,18 @@ add_executable(signal-client src/signalclient.cpp
         src/signalbot/signal_player.cpp
         src/signalbot/signal_player.h)
 
-target_link_libraries(signal-client PRIVATE dummy_backend nlohmann_json boost_process boost_asio boost_format)
-target_include_directories(signal-client PRIVATE deps/njhomann/json/include deps/boostorg/process/include deps/boostorg/format/include)
+target_link_libraries(signal-client PRIVATE dummy_backend nlohmann_json Boost::process Boost::asio Boost::format)
 
 add_executable(console-client src/consoleclient.cpp)
 
 target_link_libraries(console-client PRIVATE dummy_backend)
 
 add_executable(ai-trainer src/aitrainer.cpp)
-target_include_directories(ai-trainer PRIVATE deps/boostorg/libs/asio/include)
 target_link_libraries(ai-trainer PRIVATE dummy_backend dlib::dlib Boost::asio)
 
 # Testing
 add_executable(dummy-tester test/test.cpp)
-target_include_directories(dummy-tester PRIVATE deps/boostorg/boost/libs/test/include src/ deps/Compaile/ctrack)
+target_include_directories(dummy-tester PRIVATE src/ deps/Compaile/ctrack)
 target_link_libraries(dummy-tester PRIVATE Boost::unit_test_framework dummy_backend)
 
 target_compile_definitions(dummy-tester PRIVATE

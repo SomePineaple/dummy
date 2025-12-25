@@ -45,12 +45,13 @@ namespace rummy::nn {
         msp_actor = std::make_shared<actor_t>(*from.msp_actor);
     }
 
-    NNLogic::NNLogic(const NNLogic& mutateFrom, const float mutationChance) {
+    NNLogic::NNLogic(const NNLogic& mutateFrom, const float mutationChance)
+        : m_mutationRate(mutateFrom.m_mutationRate)
+    {
         dlib::rand rnd;
 
         // Use σ′=σ⋅exp(τz) to update the mutation rate.
-        m_mutationRate = static_cast<float>(std::clamp(mutateFrom.m_mutationRate * exp(LEARNING_RATE * rnd.get_random_gaussian()), 0.001, 0.1));
-
+        //m_mutationRate = static_cast<float>(std::clamp(mutateFrom.m_mutationRate * exp(LEARNING_RATE * rnd.get_random_gaussian()), 0.001, 0.1));
         msp_embedder = std::make_shared<embedder_t>(*mutateFrom.msp_embedder);
         msp_actor = std::make_shared<actor_t>(*mutateFrom.msp_actor);
 

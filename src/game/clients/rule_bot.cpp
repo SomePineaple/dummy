@@ -6,6 +6,10 @@
 
 #include <random>
 
+#ifdef PROFILE
+#include <ctrack.hpp>
+#endif
+
 namespace rummy::clients {
     using namespace std;
 
@@ -26,6 +30,9 @@ namespace rummy::clients {
     }
 
     bool RuleBot::run_turn(GameState& gs) {
+#ifdef PROFILE
+        CTRACK;
+#endif
         m_ToPlay.clear();
         utils::LegalMoveEngine moveEngine(gs, m_hand);
         std::uniform_real_distribution<float> chance(0, 1);

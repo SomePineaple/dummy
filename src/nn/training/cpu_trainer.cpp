@@ -16,8 +16,9 @@ namespace ba = boost::asio;
 using namespace std;
 
 namespace rummy::nn {
-    CpuTrainer::CpuTrainer(const uint16_t maxGameLength, const uint16_t generationSize, const uint16_t badMoveReward, const uint32_t maxThreads, const float mutationChance, const float mutationStrength) :
-        m_MaxGameLength(maxGameLength), m_GenerationSize(generationSize), m_BadMoveReward(badMoveReward), m_MutationChance(mutationChance), m_MutationStrength(mutationStrength), m_ThreadPool(maxThreads)
+    CpuTrainer::CpuTrainer(const uint16_t maxGameLength, const uint16_t generationSize, const uint16_t badMoveReward, const uint32_t maxThreads, const float mutationChance, const float mutationStrength)
+        : m_MaxGameLength(maxGameLength), m_GenerationSize(generationSize), m_BadMoveReward(badMoveReward),
+        m_MutationChance(mutationChance), m_MutationStrength(mutationStrength), m_ThreadPool(maxThreads)
     {
         m_networks.resize(generationSize);
         std::vector<std::future<void>> futures;

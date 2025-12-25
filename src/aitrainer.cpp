@@ -2,14 +2,13 @@
 // Created by nj60 on 11/17/25.
 //
 
-#include <thread>
 #include "nn/training/cpu_trainer.h"
 
 // TODO: Increase generation size to 2000+, then build a rule based bot that just plays everything it gets with some randomness to test against.
 // Have everyone do 5 rounds against baseline bot, filter out bottom 75%, then have the rest do 20, filter out 80% of whose remaining and run 50 rounds with top 100 who are left to choose 80 or so parents
 // Same number of games as current config, but should go faster with rule bot.
 
-constexpr uint16_t GENERATION_SIZE = 1000;
+constexpr uint16_t GENERATION_SIZE = 2000;
 constexpr int BAD_MOVE_REWARD = -50;
 constexpr uint64_t MAX_GAME_LENGTH = 100;
 constexpr uint16_t NUM_GENERATIONS = 200;
@@ -94,6 +93,7 @@ int main() {
 
     uint64_t generationSize = GENERATION_SIZE;
     if (availableRam != 0) {
+        // We need to run input through the networks to ensure they are fully intitialized
         rummy::nn::card_input_t embedInput;
         embedInput = 0;
         rummy::nn::embedder_t embedder;

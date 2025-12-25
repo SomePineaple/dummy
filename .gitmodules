@@ -1,9 +1,3 @@
-[submodule "deps/njhomann/json"]
-	path = deps/njhomann/json
-	url = https://github.com/nlohmann/json.git
 [submodule "deps/boostorg/boost"]
 	path = deps/boostorg/boost
 	url = https://github.com/boostorg/boost.git
-[submodule "deps/davisking/dlib"]
-	path = deps/davisking/dlib
-	url = https://github.com/davisking/dlib.git

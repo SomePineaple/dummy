@@ -17,7 +17,17 @@ namespace rummy::nn {
     using Logic = std::shared_ptr<NNLogic>;
 
     class CpuTrainer {
-        metrics_t test_networks(const Logic& net) const;
+    public:
+        CpuTrainer(uint16_t maxGameLength, uint16_t generationSize, uint16_t badMoveReward, uint32_t maxThreads, float mutationChance, float mutationStrength);
+        ~CpuTrainer();
+
+        void test_generation();
+        void evolve(uint16_t keepTop, uint16_t introduceNew);
+
+        // Serializes the top num networks to a file for later use
+        void save_top(uint16_t num);
+    private:
+        [[nodiscard]] metrics_t test_networks(const Logic& net) const;
 
         uint16_t m_MaxGameLength;
         uint16_t m_GenerationSize;
@@ -28,15 +38,6 @@ namespace rummy::nn {
         std::vector<Logic> m_networks;
         std::vector<std::tuple<Logic, metrics_t>> m_scoring;
         boost::asio::thread_pool m_ThreadPool;
-    public:
-        CpuTrainer(uint16_t maxGameLength, uint16_t generationSize, uint16_t badMoveReward, uint32_t maxThreads, float mutationChance, float mutationStrength);
-        ~CpuTrainer();
-
-        void test_generation();
-        void evolve(uint16_t keepTop, uint16_t introduceNew);
-
-        // Serializes the top num networks to a file for later use
-        void save_top(uint16_t num);
     };
 }
 
